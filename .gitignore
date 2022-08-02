@@ -1,13 +1,11 @@
-cache/
-notebooks/
-tokenizers/
-models/
+./.cache/
+./models/
 .ipynb_checkpoints/
-inference.ipynb
-scibert-synthetic-50k-parscit.pt
 **/__pycache__/
 .idea/
 *.pyc
 
+demo.py
+gradio_demo.py
 
 
