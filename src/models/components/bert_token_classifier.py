@@ -9,9 +9,13 @@ class BertTokenClassifier(nn.Module):
         self,
         model_checkpoint: str = "allenai/scibert_scivocab_uncased",
         output_size: int = 19,
-        cache_dir: str = ".cache"
+        cache_dir: str = ".cache",
+        save_name: str = "scibert_uncased.pt",
+        model_dir: str = "models"
     ):
         super().__init__()
+        self.save_name = save_name
+        self.model_dir = model_dir
         self.bert_embedder = AutoModel.from_pretrained(
             model_checkpoint,
             cache_dir=cache_dir,
@@ -24,15 +28,10 @@ class BertTokenClassifier(nn.Module):
     def forward(self, input_ids=None, token_type_ids=None, attention_mask=None, labels=None, h_mapping=None):
 
         outputs = self.bert_embedder(input_ids, attention_mask=attention_mask)
-        # print(h_mapping)
         outputs = torch.matmul(h_mapping, outputs[0])
         outputs = self.dropout(outputs)
-        # print(outputs.shape)
         logits = self.classifier(outputs)
-        # print(logits.shape)
-        # print(labels.shape)
-        # print(logits.view(-1, self.output_size).shape)
-        # print(labels.view(-1).shape)
+
         loss = None
         if labels is not None:
             loss_fct = nn.CrossEntropyLoss()

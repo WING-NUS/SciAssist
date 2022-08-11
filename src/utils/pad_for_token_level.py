@@ -25,16 +25,16 @@ def tokenize_and_align_labels(examples, label2id=None):
         }
     '''
 
-    #Get input_ids, token_type_ids, attention_mask
+    # Get input_ids, token_type_ids, attention_mask
     tokenized_inputs = bert_tokenizer(
         examples["tokens"], truncation=True, is_split_into_words=True
     )
     if "labels" in examples.keys():
         raw_labels = examples["labels"]
-        #label2id
+        # label2id
         labels = [[int(label2id[l]) for l in label] for label in raw_labels]
         tokenized_inputs["labels"] = labels
-        #Map sub-token to token
+        # Map sub-token to token
     tokenized_inputs["word_ids"] = []
     for i in range(len(examples["tokens"])):
         tokenized_inputs["word_ids"].append(tokenized_inputs.word_ids(i))
@@ -49,8 +49,8 @@ def tokenize_and_align_labels(examples, label2id=None):
     for tokens, word_ids in zip(examples["tokens"], tokenized_inputs["word_ids"]):
         current_tok = 0
 
-        #len(subtok_count) == the length of tokens for input, maybe smaller than origin ones
-        #calculate the number of subtokens of a token
+        # len(subtok_count) == the length of tokens for input, maybe smaller than origin ones
+        # calculate the number of subtokens of a token
         subtok_count = [0]
         for tok_id in word_ids:
             if tok_id == None:
@@ -60,8 +60,8 @@ def tokenize_and_align_labels(examples, label2id=None):
             else:
                 current_tok += 1
                 subtok_count.append(1)
-        #construct h_mapping
-        h_mapping =  []
+        # construct h_mapping
+        h_mapping = []
         for i in range(len(subtok_count)):
             h_mapping.append([])
             for j in range(len(word_ids)):
@@ -70,7 +70,7 @@ def tokenize_and_align_labels(examples, label2id=None):
         for subtok_id, tok_id in enumerate(word_ids):
             if tok_id == None:
                 continue
-            h_mapping[tok_id][subtok_id] = 1/subtok_count[tok_id]
+            h_mapping[tok_id][subtok_id] = 1 / subtok_count[tok_id]
 
         h_mappings.append(h_mapping)
 
@@ -97,26 +97,27 @@ def pad(batch: List[Dict]):
     # Pads to the longest sample
     batch = convert_to_list(batch)
     get_element = lambda x: [sample[x] for sample in batch]
-    #subtoken length
+    # subtoken length
     subtok_len = [len(tokens) for tokens in get_element(0)]
     max_subtok_len = np.array(subtok_len).max()
-    #origin token length
+    # origin token length
     tok_len = [len(tokens) for tokens in get_element(3)]
     max_tok_len = np.array(tok_len).max()
 
     do_pad = lambda x, seqlen: [sample[x] + [0] * (seqlen - len(sample[x])) for sample in batch]  # 0: <pad>
     do_labels_pad = lambda x, seqlen: [sample[x] + [-100] * (seqlen - len(sample[x])) for sample in batch]
 
-    #pad for origin tokens
+    # pad for origin tokens
     do_map_pad1 = lambda x, seqlen: [sample[x] + [[0]] * (seqlen - len(sample[x])) for sample in batch]
-    #pad for subtokens
-    do_map_pad2 = lambda batch, seqlen: [[subtoks + [0] * (seqlen - len(subtoks)) for subtoks in sample] for sample in batch]
+    # pad for subtokens
+    do_map_pad2 = lambda batch, seqlen: [[subtoks + [0] * (seqlen - len(subtoks)) for subtoks in sample] for sample in
+                                         batch]
 
     input_ids = do_pad(0, max_subtok_len)
     token_type_ids = do_pad(1, max_subtok_len)
     attn_mask = do_pad(2, max_subtok_len)
     h_mapping = do_map_pad1(3, max_tok_len)
-    h_mapping = do_map_pad2(h_mapping, max_subtok_len) #[batch_size, max_tok_len, max_subtok_len]
+    h_mapping = do_map_pad2(h_mapping, max_subtok_len)  # [batch_size, max_tok_len, max_subtok_len]
 
     LT = torch.LongTensor
 
@@ -143,10 +144,21 @@ def pad(batch: List[Dict]):
         "h_mapping": h_mapping
     }
 
+
 def postprocess(preds, labels, label_names):
     '''
+
     Remove `-100` label and mask the padded labels with len(label_names).
+    Args:
+        preds (Tensor): Prediction labels
+        labels (Tensor): True labels
+        label_names (List): Label types
+
+    Returns:
+        (LongTensor, LongTensor):
+
     '''
+
     preds = preds.tolist()
     labels = labels.tolist()
     do_pad = lambda x, seqlen: [x + [len(label_names)] * (seqlen - len(x))]

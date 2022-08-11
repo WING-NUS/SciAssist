@@ -1,9 +1,10 @@
 _target_: src.models.cora_module.CoraLitModule
 lr: 2e-5
-save_name: ${model_name}
-model_dir: ${paths.model_dir}
+
 model:
   _target_: src.models.components.bert_token_classifier.BertTokenClassifier
   model_checkpoint: "allenai/scibert_scivocab_uncased"
   output_size: 13
   cache_dir: ${paths.root_dir}/.cache/
+  save_name: ${model_name}
+  model_dir: ${paths.model_dir}

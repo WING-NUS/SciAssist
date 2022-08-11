@@ -122,13 +122,14 @@ def predict_for_string(example: str, dehyphen: Optional[bool] = False) -> Tuple[
 
     """
     # remove '-' in text
+    examples = example.split("\n")
     if dehyphen == True:
-        example = dehyphen_for_str(example)
+        examples = [dehyphen_for_str(example) for example in examples]
 
-    splitted_example = [example.split()]
-    results, tokens, preds = predict(splitted_example)
+    splitted_examples = [example.split() for example in examples]
+    results, tokens, preds = predict(splitted_examples)
 
-    return results[0], tokens[0], preds[0]
+    return results, tokens, preds
 
 
 def predict_for_text(
