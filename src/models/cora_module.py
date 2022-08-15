@@ -76,6 +76,9 @@ class CoraLitModule(LightningModule):
         true_preds, true_labels = postprocess(preds, labels, LABEL_NAMES)
         true_labels = torch.flatten(true_labels)
         true_preds = torch.flatten(true_preds)
+
+        # Because of some reason, there's an error `Encountered different devices in metric calculation`.
+        # So we have to manually move it to the current device.
         self.val_macro_f1 = self.val_macro_f1.to(true_preds.device)
 
         acc = self.val_acc(true_preds, true_labels)

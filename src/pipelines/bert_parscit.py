@@ -49,7 +49,7 @@ def to_device(batch):
         "input_ids": batch["input_ids"].to(device),
         "token_type_ids": batch["token_type_ids"].to(device),
         "attention_mask": batch["attention_mask"].to(device),
-        "h_mapping": batch["h_mapping"].to(device)
+        "token_mapping": batch["token_mapping"].to(device)
     }
 
 

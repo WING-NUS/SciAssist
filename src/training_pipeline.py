@@ -30,6 +30,9 @@ def train(config: DictConfig) -> Optional[float]:
             hydra.utils.get_original_cwd(), ckpt_path
         )
 
+    model_dir = config.paths.get("model_dir")
+    os.makedirs(model_dir, exist_ok=True)
+
     # Init lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)

@@ -9,7 +9,7 @@ def tokenize_and_align_labels(examples, label2id=None):
     '''
 
     Prepare the dataset for input.
-    For token-level task, construct h_mapping to obtain token based BERT representation from subtoken based one.
+    For token-level task, construct token_mapping to obtain token based BERT representation from subtoken based one.
 
     Args:
         examples: Dataset, {"tokens":[[s1],[s2]..],"labels":[[l1],[l2]..]}
@@ -20,7 +20,7 @@ def tokenize_and_align_labels(examples, label2id=None):
             "input_ids":,
             "token_type_ids":,
             "attention_mask":,
-            "h_mapping":,
+            "token_mapping":,
             "labels":,
         }
     '''
@@ -39,13 +39,13 @@ def tokenize_and_align_labels(examples, label2id=None):
     for i in range(len(examples["tokens"])):
         tokenized_inputs["word_ids"].append(tokenized_inputs.word_ids(i))
 
-    # Prepare h_mapping for obtaining token based BERT representeation
-    # Construct a subtoken to token mapping matrix h_mapping mapping [bsize, max_tok_len, max_subtok_len].
+    # Prepare token_mapping for obtaining token based BERT representeation
+    # Construct a subtoken to token mapping matrix token_mapping mapping [bsize, max_tok_len, max_subtok_len].
     # For example, in sent i, token j include subtokens[s:t), then mapping[i, j, s:t] = 1 / (t - s)
     # after obtaining subtoken based BERT representation `subtoken_context`[bsize, max_subtok_len, 768], use torch.matmul()
     # to obtain token based BERT representation
-    # token_context = torch.matmul(h_mapping, subtoken_context)
-    h_mappings = []
+    # token_context = torch.matmul(token_mapping, subtoken_context)
+    token_mappings = []
     for tokens, word_ids in zip(examples["tokens"], tokenized_inputs["word_ids"]):
         current_tok = 0
 
@@ -60,21 +60,21 @@ def tokenize_and_align_labels(examples, label2id=None):
             else:
                 current_tok += 1
                 subtok_count.append(1)
-        # construct h_mapping
-        h_mapping = []
+        # construct token_mapping
+        token_mapping = []
         for i in range(len(subtok_count)):
-            h_mapping.append([])
+            token_mapping.append([])
             for j in range(len(word_ids)):
-                h_mapping[i].append(0)
+                token_mapping[i].append(0)
 
         for subtok_id, tok_id in enumerate(word_ids):
             if tok_id == None:
                 continue
-            h_mapping[tok_id][subtok_id] = 1 / subtok_count[tok_id]
+            token_mapping[tok_id][subtok_id] = 1 / subtok_count[tok_id]
 
-        h_mappings.append(h_mapping)
+        token_mappings.append(token_mapping)
 
-    tokenized_inputs["h_mapping"] = h_mappings
+    tokenized_inputs["token_mapping"] = token_mappings
     return tokenized_inputs
 
 
@@ -84,12 +84,12 @@ def convert_to_list(batch):
         input_ids = i["input_ids"]
         token_type_ids = i["token_type_ids"]
         attn_mask = i["attention_mask"]
-        h_mapping = i["h_mapping"]
+        token_mapping = i["token_mapping"]
         if "labels" in i.keys():
             labels = i["labels"]
-            res.append([input_ids, token_type_ids, attn_mask, h_mapping, labels])
+            res.append([input_ids, token_type_ids, attn_mask, token_mapping, labels])
         else:
-            res.append([input_ids, token_type_ids, attn_mask, h_mapping])
+            res.append([input_ids, token_type_ids, attn_mask, token_mapping])
     return res
 
 
@@ -116,15 +116,15 @@ def pad(batch: List[Dict]):
     input_ids = do_pad(0, max_subtok_len)
     token_type_ids = do_pad(1, max_subtok_len)
     attn_mask = do_pad(2, max_subtok_len)
-    h_mapping = do_map_pad1(3, max_tok_len)
-    h_mapping = do_map_pad2(h_mapping, max_subtok_len)  # [batch_size, max_tok_len, max_subtok_len]
+    token_mapping = do_map_pad1(3, max_tok_len)
+    token_mapping = do_map_pad2(token_mapping, max_subtok_len)  # [batch_size, max_tok_len, max_subtok_len]
 
     LT = torch.LongTensor
 
     input_ids = LT(input_ids)
     attn_mask = LT(attn_mask)
     token_type_ids = LT(token_type_ids)
-    h_mapping = torch.Tensor(h_mapping)
+    token_mapping = torch.Tensor(token_mapping)
     if len(batch[0]) == 5:
         labels = do_labels_pad(4, max_tok_len)
         labels = LT(labels)
@@ -133,7 +133,7 @@ def pad(batch: List[Dict]):
             "input_ids": input_ids,
             "token_type_ids": token_type_ids,
             "attention_mask": attn_mask,
-            "h_mapping": h_mapping
+            "token_mapping": token_mapping
         }
 
     return {
@@ -141,7 +141,7 @@ def pad(batch: List[Dict]):
         "token_type_ids": token_type_ids,
         "attention_mask": attn_mask,
         "labels": labels,
-        "h_mapping": h_mapping
+        "token_mapping": token_mapping
     }
 
 
