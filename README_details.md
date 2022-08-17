@@ -289,3 +289,18 @@ from src.pipelines.xx import predict
 res = predict(...)
 ```
 
+### Other points
+#### Default directories
+For convenient management, we set some default value as follows.
+* src/: all source codes
+* configs/: hydra config files
+* bin/: third-party toolkits 
+* data/: datasets
+* models/: models or checkpoints we trained
+* .cache/: cached files such as models loaded from huggingface
+* logs/: experiment logs
+* scripts/: quickstart 
+
+Some files such as experimental logs and checkpoints don't need to be commited to the repo. 
+
+### (Other standards and regulations are to be added here)
