@@ -20,9 +20,8 @@
 
 ## About
 
-This is the repository of SciAssist and is under active development at National University of Singapore (NUS), Singapore. The project was built upon a [template by ashleve](https://github.com/ashleve/lightning-hydra-template).
+This is the repository of SciAssist, which is a toolkit to assist scientists' research. SciAssist currently supports reference string parsing, more functions are under active development by [WING@NUS](https://wing.comp.nus.edu.sg/), Singapore. The project was built upon an open-sourced [template by ashleve](https://github.com/ashleve/lightning-hydra-template).
 
-SciAssist is a toolkit for scientific document processing. Now it has included reference string parsing.
 ## Installation
 
 ```bash
@@ -99,7 +98,7 @@ HYDRA_FULL_ERROR=1 python train.py
 ```
 
 ## Develop
-Here's a simple introduction about how ton incorporate a new task into SciAssist.
+Here's a simple introduction about how to incorporate a new task into SciAssist.
 For details and examples, see [REAMDE_details.md](README_details.md).
 ### How to train on a new task
 For a new task, the most important things are the dataset and the model to be used.
