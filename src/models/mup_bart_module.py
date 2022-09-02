@@ -96,19 +96,12 @@ class MupBartLitModule(LightningModule):
     def validation_epoch_end(self, outputs: List[Any]):
         rouge = self.val_metric.compute()
 
-        # self.log("val/Rouge-1", rouge["rouge1_fmeasure"], on_epoch=True, prog_bar=True)
-        # self.log("val/Rouge-2", rouge["rouge2_fmeasure"], on_epoch=True, prog_bar=True)
-        # self.log("val/Rouge-L", rouge["rougeL_fmeasure"], on_epoch=True, prog_bar=True)
-        # self.log("val/Rouge-Lsum", rouge["rougeLsum_fmeasure"], on_epoch=True, prog_bar=True)
         if rouge["rouge1_fmeasure"] > self.best_Rouge1:
             self.val_best_Rouge1.update(rouge["rouge1_fmeasure"])
             self.best_Rouge1 = rouge["rouge1_fmeasure"]
             print(f"Epoch: {self.current_epoch}: Save the current best model.")
             torch.save(self.model.state_dict(), self.save_path)
-            with open(os.path.join(self.model.model_dir, f"mup_result.txt"), "w") as output:
-                for step_outputs in outputs:
-                    for res in step_outputs['preds']:
-                        output.write(res + "\n")
+
         self.log("val/best_rouge1", self.val_best_Rouge1.compute(), on_epoch=True, prog_bar=True)
 
 
