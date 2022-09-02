@@ -27,3 +27,6 @@ class BartForSummarization(nn.Module):
             loss=outputs.loss,
             logits=outputs.logits
         )
+
+    def generate(self, input_ids=None, attention_mask=None, num_beams=1):
+        return self.bart.generate(input_ids=input_ids, attention_mask=attention_mask, num_beams=num_beams)

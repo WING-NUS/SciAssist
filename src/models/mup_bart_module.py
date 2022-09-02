@@ -57,7 +57,7 @@ class MupBartLitModule(LightningModule):
         self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
 
         # Get prediction ids sequence
-        preds = self.model.bart.generate(input_ids=input_ids,attention_mask=attention_mask)
+        preds = self.model.generate(input_ids=input_ids,attention_mask=attention_mask)
         # Convert ids to strings
         decoded_preds, decoded_labels = postprocess(preds, labels)
 
@@ -110,7 +110,7 @@ class MupBartLitModule(LightningModule):
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
         # Get prediction ids sequence
-        preds = self.model.bart.generate(input_ids=input_ids, attention_mask=attention_mask)
+        preds = self.model.generate(input_ids=input_ids, attention_mask=attention_mask)
         # Convert ids to strings
         decoded_preds, decoded_labels = postprocess(preds, labels)
 

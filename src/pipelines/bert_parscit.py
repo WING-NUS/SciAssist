@@ -2,17 +2,15 @@ import os
 import timeit
 from typing import List, Tuple, Optional
 
-import numpy
 import torch
-from torch.utils.data import DataLoader
-from collections import Counter
 from datasets import Dataset
+from torch.utils.data import DataLoader
 
-from src.models.components.bert_token_classifier import BertTokenClassifier
 from src.datamodules.components.cora_label import LABEL_NAMES
 from src.datamodules.components.cora_label import label2id
-from src.utils.pdf2text import process_pdf_file, get_reference
+from src.models.components.bert_token_classifier import BertTokenClassifier
 from src.utils.pad_for_token_level import pad, tokenize_and_align_labels
+from src.utils.pdf2text import process_pdf_file, get_reference
 
 ROOT_DIR = os.getcwd()
 BASE_OUTPUT_DIR = os.path.join(ROOT_DIR, "output/result")
@@ -165,7 +163,7 @@ def predict_for_text(
 
     splitted_examples = [example.split() for example in examples]
     results, tokens, preds = predict(splitted_examples)
-    with open(os.path.join(output_dir, f"{output_file[:-4]}_result.txt"), "w") as output:
+    with open(os.path.join(output_dir, f"{output_file[:-4]}_rs.txt"), "w") as output:
         for res in results:
             output.write(res + "\n")
     total_time = timeit.default_timer() - start_time
