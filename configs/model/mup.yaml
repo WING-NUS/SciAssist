@@ -1,6 +1,5 @@
 _target_: src.models.mup_bart_module.MupBartLitModule
-lr: 2e-5
-
+lr: 5e-5
 model:
   _target_: src.models.components.bart_summarization.BartForSummarization
   model_checkpoint: "facebook/bart-large-cnn"

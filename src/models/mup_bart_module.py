@@ -22,9 +22,9 @@ class MupBartLitModule(LightningModule):
         super().__init__()
         self.save_hyperparameters(logger=False)
         self.model = model
-        self.val_metric = ROUGEScore()
+        self.val_metric = ROUGEScore(use_stemmer=True)
         self.val_best_Rouge1 = MaxMetric()
-        self.test_metric = ROUGEScore()
+        self.test_metric = ROUGEScore(use_stemmer=True)
         self.test_best_Rouge1 = MaxMetric()
         self.best_Rouge1 = 0
 
@@ -40,9 +40,9 @@ class MupBartLitModule(LightningModule):
         return loss, labels
 
     def training_step(self, batch: Any, batch_idx: int):
-        outputs = self.forward(batch)
-        loss = outputs.loss
-        self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
+        outputs = self.step(batch)
+        loss = outputs[0]
+        self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         return {"loss": loss}
 
     def training_epoch_end(self, outputs: List[Any]):
@@ -52,6 +52,10 @@ class MupBartLitModule(LightningModule):
         labels = batch["labels"]
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
+        outputs = self.step(batch)
+        loss = outputs[0]
+        self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
+
         # Get prediction ids sequence
         preds = self.model.bart.generate(input_ids=input_ids,attention_mask=attention_mask)
         # Convert ids to strings
@@ -68,28 +72,44 @@ class MupBartLitModule(LightningModule):
         result["preds"] = decoded_preds
         result["labels"] = decoded_labels
 
-        # Log results
+        #  Log results
         self.log("val/Rouge-1", result["rouge1_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/PRouge-1", result["rouge1_precision"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/RRouge-1", result["rouge1_recall"], on_step=False, on_epoch=True, prog_bar=True)
+
         self.log("val/Rouge-2", result["rouge2_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/PRouge-2", result["rouge2_precision"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/RRouge-2", result["rouge2_recall"], on_step=False, on_epoch=True, prog_bar=True)
+
         self.log("val/Rouge-L", result["rougeL_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/PRouge-L", result["rougeL_precision"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/RRouge-L", result["rougeL_recall"], on_step=False, on_epoch=True, prog_bar=True)
+
         self.log("val/Rouge-Lsum", result["rougeLsum_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/PRouge-Lsum", result["rougeLsum_precision"], on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/RRouge-Lsum", result["rougeLsum_recall"], on_step=False, on_epoch=True, prog_bar=True)
+
         self.log("val/gen_len", result["gen_len"], on_step=True, on_epoch=False, prog_bar=True)
 
         return result
 
     def validation_epoch_end(self, outputs: List[Any]):
         rouge = self.val_metric.compute()
-        self.val_best_Rouge1.update(rouge["rouge1_fmeasure"])
-        self.log("val/best_rouge1", self.val_best_Rouge1.compute(), on_epoch=True, prog_bar=True)
+
         # self.log("val/Rouge-1", rouge["rouge1_fmeasure"], on_epoch=True, prog_bar=True)
         # self.log("val/Rouge-2", rouge["rouge2_fmeasure"], on_epoch=True, prog_bar=True)
         # self.log("val/Rouge-L", rouge["rougeL_fmeasure"], on_epoch=True, prog_bar=True)
         # self.log("val/Rouge-Lsum", rouge["rougeLsum_fmeasure"], on_epoch=True, prog_bar=True)
-
         if rouge["rouge1_fmeasure"] > self.best_Rouge1:
+            self.val_best_Rouge1.update(rouge["rouge1_fmeasure"])
             self.best_Rouge1 = rouge["rouge1_fmeasure"]
             print(f"Epoch: {self.current_epoch}: Save the current best model.")
             torch.save(self.model.state_dict(), self.save_path)
+            with open(os.path.join(self.model.model_dir, f"mup_result.txt"), "w") as output:
+                for step_outputs in outputs:
+                    for res in step_outputs['preds']:
+                        output.write(res + "\n")
+        self.log("val/best_rouge1", self.val_best_Rouge1.compute(), on_epoch=True, prog_bar=True)
 
 
     def test_step(self, batch: Any, batch_idx: int):
@@ -124,12 +144,10 @@ class MupBartLitModule(LightningModule):
     def test_epoch_end(self, outputs: List[Any]):
         # wandb.init()
         rouge = self.test_metric.compute()
-        self.val_best_Rouge1.update(rouge["rouge1_fmeasure"])
-        self.log("test/best_rouge1", self.val_best_Rouge1.compute(), on_epoch=True, prog_bar=True)
-        # self.log("test/Rouge-1", rouge["rouge1_fmeasure"], on_epoch=True, prog_bar=True)
-        # self.log("test/Rouge-2", rouge["rouge2_fmeasure"], on_epoch=True, prog_bar=True)
-        # self.log("test/Rouge-L", rouge["rougeL_fmeasure"], on_epoch=True, prog_bar=True)
-        # self.log("test/Rouge-Lsum", rouge["rougeLsum_fmeasure"], on_epoch=True, prog_bar=True)
+        self.log("test/Rouge-1", rouge["rouge1_fmeasure"], on_epoch=True, prog_bar=True)
+        self.log("test/Rouge-2", rouge["rouge2_fmeasure"], on_epoch=True, prog_bar=True)
+        self.log("test/Rouge-L", rouge["rougeL_fmeasure"], on_epoch=True, prog_bar=True)
+        self.log("test/Rouge-Lsum", rouge["rougeLsum_fmeasure"], on_epoch=True, prog_bar=True)
 
 
         plt.figure(figsize=(24, 26))
@@ -143,6 +161,8 @@ class MupBartLitModule(LightningModule):
         self.test_best_Rouge1.reset()
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(
+        optimizer = torch.optim.AdamW(
             params=self.hparams.model.parameters(), lr=self.hparams.lr
         )
+        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
+        return [optimizer],[lr_scheduler]

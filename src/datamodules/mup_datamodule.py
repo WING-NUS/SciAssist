@@ -6,6 +6,7 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 from transformers import DataCollatorForSeq2Seq
 
+from src.models.components.bart_summarization import BartForSummarization
 from src.models.components.bart_tokenizer import bart_tokenizer
 from src.utils.pad_for_seq2seq import tokenize_and_align_labels
 
@@ -22,7 +23,7 @@ class MupDataModule(LightningDataModule):
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
-        self.data_collator = DataCollatorForSeq2Seq(bart_tokenizer, pad_to_multiple_of=8)
+        self.data_collator = DataCollatorForSeq2Seq(bart_tokenizer, model=BartForSummarization, pad_to_multiple_of=8)
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None

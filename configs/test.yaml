@@ -27,7 +27,9 @@ ignore_warnings: True
 
 seed: null
 
-name: "default"
 
 # passing checkpoint path is necessary
 ckpt_path: ???
+
+name: "default"
+model_name: ${ckpt_path}

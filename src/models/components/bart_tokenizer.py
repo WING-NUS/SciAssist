@@ -9,5 +9,6 @@ TOKENIZER_CACHE_DIR = ".cache"
 bart_tokenizer = AutoTokenizer.from_pretrained(
     BART_MODEL_CHECKPOINT,
     model_max_length = MODEL_MAX_LENGTH,
-    cache_dir=TOKENIZER_CACHE_DIR
+    cache_dir=TOKENIZER_CACHE_DIR,
+    use_fast=True
 )
