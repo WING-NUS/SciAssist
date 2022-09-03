@@ -1,3 +1,4 @@
+import csv
 from typing import Optional
 
 import datasets
@@ -33,8 +34,20 @@ class MupDataModule(LightningDataModule):
             self.hparams.data_repo,
             cache_dir=self.hparams.data_cache_dir
         )
-        raw_datasets["train"] = raw_datasets["train"]
-        raw_datasets["validation"] = raw_datasets["validation"]
+
+        # Get test from csv
+        test_set = {"paper_name":[], "text":[], "summary":[],"paper_id":[]}
+        with open("data/mup/test-release.csv",'r', newline='') as f:
+            rows = csv.reader(f)
+            # Skip title line
+            next(rows)
+            for row in rows:
+                test_set["paper_name"].append(row[1])
+                test_set["text"].append(row[2])
+                test_set["summary"].append(row[3])
+                test_set["paper_id"].append(row[4])
+        test_set = Dataset.from_dict(test_set)
+        raw_datasets["test"] = test_set
         return raw_datasets
 
     def setup(self, stage: Optional[str] = None):
@@ -48,7 +61,7 @@ class MupDataModule(LightningDataModule):
             )
             self.data_train = tokenized_datasets["train"]
             self.data_val = tokenized_datasets["validation"]
-            self.data_test = tokenized_datasets["validation"]
+            self.data_test = tokenized_datasets["test"]
 
     def train_dataloader(self):
         return DataLoader(
