@@ -37,6 +37,13 @@ class MupBartLitModule(LightningModule):
     def forward(self, inputs):
         return self.hparams.model(**inputs)
 
+
+    def on_train_start(self):
+        self.val_metric.reset()
+        self.val_best_Rouge1.reset()
+        self.test_metric.reset()
+        self.test_best_Rouge1.reset()
+
     def step(self, batch: Any):
         inputs, labels = batch, batch["labels"]
         outputs = self.forward(inputs)
@@ -89,8 +96,6 @@ class MupBartLitModule(LightningModule):
         self.log("val/Rouge-Lsum", result["rougeLsum_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/PRouge-Lsum", result["rougeLsum_precision"], on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/RRouge-Lsum", result["rougeLsum_recall"], on_step=False, on_epoch=True, prog_bar=True)
-
-
 
         return result
 
