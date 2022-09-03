@@ -101,9 +101,9 @@ class MupBartLitModule(LightningModule):
 
     def validation_epoch_end(self, outputs: List[Any]):
         rouge = self.val_metric.compute()
+        self.val_best_Rouge1.update(rouge["rouge1_fmeasure"])
         # Save the best model
         if rouge["rouge1_fmeasure"] > self.best_Rouge1:
-            self.val_best_Rouge1.update(rouge["rouge1_fmeasure"])
             self.best_Rouge1 = rouge["rouge1_fmeasure"]
             print(f"Epoch: {self.current_epoch}: Save the current best model.")
             torch.save(self.model.state_dict(), self.save_path)
