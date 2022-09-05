@@ -102,7 +102,7 @@ def summarize_for_string(
             Source text and predicted summarization.
 
     """
-    res = summarize(example, num_beams)
+    res = summarize([example], num_beams)
 
     return  example, res[0]
 

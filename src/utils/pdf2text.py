@@ -10,7 +10,7 @@ from bin.doc2json.doc2json.grobid2json.process_pdf import process_pdf_file
 
 
 BASE_OUTPUT_DIR = "output"
-BASE_TEMP_DIR = "temp"
+BASE_TEMP_DIR = "output/.temp"
 
 def get_reference(json_file: str, output_dir: str = BASE_OUTPUT_DIR):
 
