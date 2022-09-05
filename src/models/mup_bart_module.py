@@ -116,9 +116,9 @@ class MupBartLitModule(LightningModule):
     def test_step(self, batch: Any, batch_idx: int):
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
-        labels = batch["labels"]
         result = {}
-        if labels==None:
+
+        if "labels" not in batch.keys():
             # Simply do prediction
             preds = self.model.generate(input_ids=input_ids, attention_mask=attention_mask)
             decoded_preds = bart_tokenizer.batch_decode(preds, skip_special_tokens=True)
@@ -127,6 +127,7 @@ class MupBartLitModule(LightningModule):
         else:
             # Do prediction and compute metrics
             # Get prediction ids sequence
+            labels = batch["labels"]
             preds = self.model.generate(input_ids=input_ids, attention_mask=attention_mask)
             # Convert ids to strings
             decoded_preds, decoded_labels = postprocess(preds, labels)

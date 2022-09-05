@@ -7,7 +7,7 @@ from src.models.components.bart_tokenizer import bart_tokenizer, MAX_SOURCE_LENG
 def tokenize_and_align_labels(examples, inputs_column="text", labels_column="summary"):
     """
     Args:
-        examples: Dataset, {"text":[[s1],[s2]..],"summary":[[l1],[l2]..]}
+        examples: Dataset, {"text":[s1,s2..],"summary":[l1,l2..]}
         inputs(str): The name of input column
         labels(str): The name of target column
 
