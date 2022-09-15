@@ -1,0 +1,8 @@
+_target_: SciAssist.models.mup_bart_module.MupBartLitModule
+lr: 5e-5
+model:
+  _target_: SciAssist.models.components.bart_summarization.BartForSummarization
+  model_checkpoint: "facebook/bart-large-cnn"
+  cache_dir: ${paths.root_dir}/.cache/
+  save_name: ${model_name}
+  model_dir: ${paths.model_dir}

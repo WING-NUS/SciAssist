@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import gradio as gr
 
-from src.pipelines.bert_parscit import predict_for_text, predict_for_pdf, predict_for_string
+from SciAssist.pipelines import predict_for_text, predict_for_pdf, predict_for_string
 
 description = '''
 If you'd like to generate a demo like this on your own, please go for [**our GitHub repo**](https://github.com/ljhgabe/BERT-ParsCit) 
