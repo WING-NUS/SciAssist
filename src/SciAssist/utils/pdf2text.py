@@ -1,13 +1,10 @@
 import argparse
 import json
 import os
-import sys
 
 import nltk
 
-sys.path.append(os.getcwd())
-from SciAssist.bin import process_pdf_file
-
+from SciAssist.bin.doc2json.doc2json.grobid2json.process_pdf import process_pdf_file
 
 BASE_OUTPUT_DIR = "output"
 BASE_TEMP_DIR = "output/.temp"
