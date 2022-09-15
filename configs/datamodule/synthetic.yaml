@@ -1,8 +1,0 @@
-_target_: src.datamodules.synthetic_datamodule.SyntheticDataModule
-
-data_repo: "myvision/yuanchuan-synthetic-dataset-final"
-train_batch_size: 8
-train_val_test_split: [100_000, 5_000, 10_000]
-num_workers: 0
-pin_memory: False
-data_cache_dir:  ${paths.data_dir}/synthetic-final/
