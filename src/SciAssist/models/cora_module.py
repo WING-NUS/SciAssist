@@ -11,14 +11,14 @@ from torchmetrics import MaxMetric
 from torchmetrics.classification.accuracy import Accuracy
 
 from SciAssist.datamodules.components.cora_label import num_labels, LABEL_NAMES
-from SciAssist.models.components.bert_token_classifier import BertTokenClassifier
+from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
 from SciAssist.utils.pad_for_token_level import postprocess
 
 
 class CoraLitModule(LightningModule):
     def __init__(
         self,
-        model: BertTokenClassifier,
+        model: BertForTokenClassifier,
         lr: float = 2e-5,
     ):
         super().__init__()

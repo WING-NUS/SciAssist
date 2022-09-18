@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from SciAssist import BASE_CACHE_DIR
 from SciAssist.datamodules.components.cora_label import LABEL_NAMES
 from SciAssist.datamodules.components.cora_label import label2id
-from SciAssist.models.components.bert_token_classifier import BertTokenClassifier
+from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
 from SciAssist.utils.pad_for_token_level import pad, tokenize_and_align_labels
 from SciAssist.utils.pdf2text import process_pdf_file, get_reference
 
@@ -20,7 +20,7 @@ BASE_TEMP_DIR = os.path.join(ROOT_DIR,"output/.temp")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print("Loading models...")
-model = BertTokenClassifier(
+model = BertForTokenClassifier(
     model_checkpoint="allenai/scibert_scivocab_uncased",
     output_size=13,
     cache_dir=BASE_CACHE_DIR

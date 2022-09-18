@@ -3,7 +3,7 @@ from typing import Dict, List
 import numpy as np
 import torch
 
-from SciAssist.models.components.bert_tokenizer import bert_tokenizer
+from SciAssist.models.components.bert_tokenizer import BertTokenizer
 
 
 def tokenize_and_align_labels(examples, label2id=None):
@@ -27,7 +27,7 @@ def tokenize_and_align_labels(examples, label2id=None):
     '''
 
     # Get input_ids, token_type_ids, attention_mask
-    tokenized_inputs = bert_tokenizer(
+    tokenized_inputs = BertTokenizer(
         examples["tokens"], truncation=True, is_split_into_words=True
     )
     if "labels" in examples.keys():

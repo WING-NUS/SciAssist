@@ -8,7 +8,7 @@ from torchmetrics import MaxMetric
 from torchmetrics.text.rouge import ROUGEScore
 from transformers import AutoModelForSeq2SeqLM
 
-from SciAssist.models.components.bart_tokenizer import bart_tokenizer
+from SciAssist.models.components.bart_tokenizer import BartTokenizer
 from SciAssist.utils.pad_for_seq2seq import postprocess
 
 
@@ -78,7 +78,7 @@ class MupBartLitModule(LightningModule):
         result = {key: value * 100 for key, value in rouge_metric.items()}
 
         # Compute average length of summaries
-        self.val_gen_lens.extend([np.count_nonzero(pred != bart_tokenizer.pad_token_id) for pred in preds.to("cpu")])
+        self.val_gen_lens.extend([np.count_nonzero(pred != BartTokenizer.pad_token_id) for pred in preds.to("cpu")])
 
         #  Log results
         self.log("val/Rouge-1", result["rouge1_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
@@ -121,7 +121,7 @@ class MupBartLitModule(LightningModule):
         if "labels" not in batch.keys():
             # Simply do prediction
             preds = self.model.generate(input_ids=input_ids, attention_mask=attention_mask)
-            decoded_preds = bart_tokenizer.batch_decode(preds, skip_special_tokens=True)
+            decoded_preds = BartTokenizer.batch_decode(preds, skip_special_tokens=True)
             result["preds"] = decoded_preds
 
         else:
@@ -144,7 +144,7 @@ class MupBartLitModule(LightningModule):
             self.log("test/Rouge-Lsum", result["rougeLsum_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
 
         # Compute average length of summaries
-        self.test_gen_lens.extend([np.count_nonzero(pred != bart_tokenizer.pad_token_id) for pred in preds.to("cpu")])
+        self.test_gen_lens.extend([np.count_nonzero(pred != BartTokenizer.pad_token_id) for pred in preds.to("cpu")])
         return result
 
 

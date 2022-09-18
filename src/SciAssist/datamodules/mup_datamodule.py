@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from transformers import DataCollatorForSeq2Seq
 
 from SciAssist.models.components.bart_summarization import BartForSummarization
-from SciAssist.models.components.bart_tokenizer import bart_tokenizer
+from SciAssist.models.components.bart_tokenizer import BartTokenizer
 from SciAssist.utils.data_reader import csv_reader
 from SciAssist.utils.pad_for_seq2seq import tokenize_and_align_labels
 
@@ -24,7 +24,7 @@ class MupDataModule(LightningDataModule):
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
-        self.data_collator = DataCollatorForSeq2Seq(bart_tokenizer, model=BartForSummarization, pad_to_multiple_of=8)
+        self.data_collator = DataCollatorForSeq2Seq(BartTokenizer, model=BartForSummarization, pad_to_multiple_of=8)
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None

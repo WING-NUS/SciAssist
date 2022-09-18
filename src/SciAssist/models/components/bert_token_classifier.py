@@ -4,7 +4,7 @@ from transformers import AutoModel
 from transformers.modeling_outputs import TokenClassifierOutput
 
 
-class BertTokenClassifier(nn.Module):
+class BertForTokenClassifier(nn.Module):
     def __init__(
         self,
         model_checkpoint: str = "allenai/scibert_scivocab_uncased",

@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from transformers import DataCollatorForSeq2Seq
 
 from SciAssist.models.components.bart_summarization import BartForSummarization
-from SciAssist.models.components.bart_tokenizer import bart_tokenizer
+from SciAssist.models.components.bart_tokenizer import BartTokenizer
 from SciAssist.utils.pad_for_seq2seq import tokenize_and_align_labels
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 
@@ -70,7 +70,7 @@ def summarize(
     dataloader = DataLoader(
         dataset=tokenized_example,
         batch_size=8,
-        collate_fn=DataCollatorForSeq2Seq(bart_tokenizer, model=BartForSummarization, pad_to_multiple_of=8)
+        collate_fn=DataCollatorForSeq2Seq(BartTokenizer, model=BartForSummarization, pad_to_multiple_of=8)
     )
 
     results = []
@@ -81,7 +81,7 @@ def summarize(
         # Get token ids of summary
         pred = model.generate(batch["input_ids"], batch["attention_mask"],num_beams)
         # Convert token ids to text
-        decoded_preds = bart_tokenizer.batch_decode(pred, skip_special_tokens=True)
+        decoded_preds = BartTokenizer.batch_decode(pred, skip_special_tokens=True)
 
         results.extend(decoded_preds)
 
