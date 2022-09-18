@@ -15,7 +15,7 @@ from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 ROOT_DIR = os.getcwd()
 BASE_OUTPUT_DIR = os.path.join(ROOT_DIR, "output/result")
 BASE_TEMP_DIR = os.path.join(ROOT_DIR,"output/.temp")
-BASE_CACHE_DIR = os.path.join(ROOT_DIR, ".cache")
+BASE_CACHE_DIR = os.path.join(os.environ["HOME"],".cache/sciassist")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -24,7 +24,8 @@ model = BartForSummarization(
     cache_dir=BASE_CACHE_DIR
 )
 
-model.load_state_dict(torch.load("models/mup/bart-large-cnn-e5.pt"))
+state_dict = torch.hub.load_state_dict_from_url("https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/bart-large-cnn-e5.pt",model_dir=BASE_CACHE_DIR)
+model.load_state_dict(state_dict)
 
 model.eval()
 if torch.cuda.is_available():

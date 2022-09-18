@@ -6,6 +6,7 @@ import torch
 from datasets import Dataset
 from torch.utils.data import DataLoader
 
+from SciAssist import BASE_CACHE_DIR
 from SciAssist.datamodules.components.cora_label import LABEL_NAMES
 from SciAssist.datamodules.components.cora_label import label2id
 from SciAssist.models.components.bert_token_classifier import BertTokenClassifier
@@ -15,17 +16,18 @@ from SciAssist.utils.pdf2text import process_pdf_file, get_reference
 ROOT_DIR = os.getcwd()
 BASE_OUTPUT_DIR = os.path.join(ROOT_DIR, "output/result")
 BASE_TEMP_DIR = os.path.join(ROOT_DIR,"output/.temp")
-BASE_CACHE_DIR = os.path.join(ROOT_DIR, ".cache")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+print("Loading models...")
 model = BertTokenClassifier(
     model_checkpoint="allenai/scibert_scivocab_uncased",
     output_size=13,
     cache_dir=BASE_CACHE_DIR
 )
 
-model.load_state_dict(torch.load("models/default/scibert-uncased.pt"))
+state_dict = torch.hub.load_state_dict_from_url("https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/scibert-uncased.pt",model_dir=BASE_CACHE_DIR)
+model.load_state_dict(state_dict)
 
 model.eval()
 if torch.cuda.is_available():
