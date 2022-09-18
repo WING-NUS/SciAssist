@@ -2,7 +2,7 @@
 
 # put in your pdf2json directory here
 
-export PDF2JSON_HOME=$(pwd)/bin/doc2json
+export PDF2JSON_HOME="$( cd $( dirname ${BASH_SOURCE[0]} ) && cd .. && pwd )"
 
 echo $PDF2JSON_HOME
 # Download Grobid
