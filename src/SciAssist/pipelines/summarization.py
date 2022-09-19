@@ -1,3 +1,4 @@
+import os
 from typing import List, Tuple, Optional
 
 from datasets import Dataset
@@ -5,14 +6,11 @@ from torch.utils.data import DataLoader
 from transformers import DataCollatorForSeq2Seq
 
 from SciAssist import BASE_CACHE_DIR, BASE_TEMP_DIR, BASE_OUTPUT_DIR
-from SciAssist.models.components.bart_summarization import BartForSummarization
 from SciAssist.models.components.bart_tokenizer import BartTokenizer
-from SciAssist.pipelines import TASKS
 from SciAssist.pipelines.Pipeline import Pipeline
 from SciAssist.utils.pad_for_seq2seq import tokenize_and_align_labels
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 
-model_dict = TASKS['reference-string-parsing']
 
 class Summarization(Pipeline):
 
@@ -31,6 +29,7 @@ class Summarization(Pipeline):
             output_dir = None,
             temp_dir = None,
             num_beams = 1,
+            save_results = False,
     ):
         if output_dir is None:
             output_dir = self.output_dir
@@ -40,9 +39,9 @@ class Summarization(Pipeline):
         if type in ["str","string"]:
             return self._summarize_for_string(example=input)
         elif type in ["txt","text"]:
-            return self._summarize_for_text(filename=input, output_dir=output_dir)
+            return self._summarize_for_text(filename=input, output_dir=output_dir, save_results=save_results)
         elif type == "pdf":
-            return self._summarize_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir, num_beams=num_beams)
+            return self._summarize_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir, num_beams=num_beams, save_results=save_results)
 
     def _to_device(self, batch):
         if self.model_name in ["default", "bart-cnn-on-mup"]:
@@ -80,7 +79,7 @@ class Summarization(Pipeline):
         dataloader = DataLoader(
             dataset=tokenized_example,
             batch_size=8,
-            collate_fn=DataCollatorForSeq2Seq(BartTokenizer, model=BartForSummarization, pad_to_multiple_of=8)
+            collate_fn=DataCollatorForSeq2Seq(self.config["tokenizer"], model=self.config["model"], pad_to_multiple_of=8)
         )
 
         results = []
@@ -122,7 +121,9 @@ class Summarization(Pipeline):
     def _summarize_for_text(
             self,
             filename: str,
-            num_beams: int = 1
+            num_beams: int = 1,
+            output_dir: Optional[str] = BASE_OUTPUT_DIR,
+            save_results: Optional[bool] = False,
     ) -> Tuple[str, str]:
         """
 
@@ -143,6 +144,13 @@ class Summarization(Pipeline):
         examples = ["".join(examples)]
         res = self._summarize(examples, num_beams)
 
+        # Save predicted results as a text file
+        if save_results:
+            os.makedirs(output_dir, exist_ok=True)
+            output_file = os.path.basename(filename)
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_summ.txt"), "w") as output:
+                output.write(res[0] + "\n")
+
         return res[0], examples
 
 
@@ -151,7 +159,8 @@ class Summarization(Pipeline):
             filename: str,
             temp_dir: Optional[str] = BASE_TEMP_DIR,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
-            num_beams: int = 1
+            num_beams: int = 1,
+            save_results: Optional[bool] = False
     ) -> Tuple[str, str]:
         """
         Summarize a document from a PDF file.
@@ -171,4 +180,4 @@ class Summarization(Pipeline):
         # Extract bodytext from pdf and save them in TEXT format.
         text_file = get_bodytext(json_file=json_file, output_dir=output_dir)
         # Do summarization
-        return self._summarize_for_text(text_file, num_beams=num_beams)
+        return self._summarize_for_text(text_file, num_beams=num_beams, save_results=save_results)

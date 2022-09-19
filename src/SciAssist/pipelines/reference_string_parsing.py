@@ -28,6 +28,7 @@ class ReferenceStringParsing(Pipeline):
             self, input: str, type: str = "pdf", dehyphen = False,
             output_dir = None,
             temp_dir = None,
+            save_results = True,
     ):
         if output_dir is None:
             output_dir = self.output_dir
@@ -37,10 +38,10 @@ class ReferenceStringParsing(Pipeline):
         if type in ["str","string"]:
             return self._predict_for_string(example=input, dehyphen=dehyphen)
         elif type in ["txt","text"]:
-            return self._predict_for_text(filename=input, output_dir=output_dir, dehyphen=dehyphen)
+            return self._predict_for_text(filename=input, output_dir=output_dir, dehyphen=dehyphen, save_results=save_results)
         elif type == "pdf":
             print(temp_dir, self.temp_dir)
-            return self._predict_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir, dehyphen=dehyphen)
+            return self._predict_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir, dehyphen=dehyphen, save_results=save_results)
 
 
     def _dehyphen_for_str(self, text: str):
@@ -142,7 +143,8 @@ class ReferenceStringParsing(Pipeline):
             self,
             filename: str,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
-            dehyphen: Optional[bool] = False
+            dehyphen: Optional[bool] = False,
+            save_results: Optional[bool] = False
     ) -> Tuple[List[str], List[List[str]], List[List[str]]]:
         """
 
@@ -158,8 +160,7 @@ class ReferenceStringParsing(Pipeline):
                 Tagged strings, origin tokens and labels predicted by the model.
 
         """
-        os.makedirs(output_dir, exist_ok=True)
-        output_file = os.path.basename(filename)
+
 
         with open(filename, "r") as f:
             examples = f.readlines()
@@ -170,9 +171,14 @@ class ReferenceStringParsing(Pipeline):
 
         splitted_examples = [example.split() for example in examples]
         results, tokens, preds = self._predict(splitted_examples)
-        with open(os.path.join(output_dir, f"{output_file[:-4]}_rs.txt"), "w") as output:
-            for res in results:
-                output.write(res + "\n")
+
+        # Save predicted results as a text file
+        if save_results:
+            os.makedirs(output_dir, exist_ok=True)
+            output_file = os.path.basename(filename)
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_rsp.txt"), "w") as output:
+                for res in results:
+                    output.write(res + "\n")
         return results, tokens, preds
 
 
@@ -181,7 +187,8 @@ class ReferenceStringParsing(Pipeline):
             filename: str,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
             temp_dir: Optional[str] = BASE_TEMP_DIR,
-            dehyphen: Optional[bool] = False
+            dehyphen: Optional[bool] = False,
+            save_results: Optional[bool] = False
     ) -> Tuple[List[str], List[List[str]], List[List[str]]]:
         """
         Parse reference strings from a PDF and save the result as a text file.
@@ -201,4 +208,4 @@ class ReferenceStringParsing(Pipeline):
         json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
         #Extract reference strings from JSON and save them in TEXT format.
         text_file = get_reference(json_file=json_file, output_dir=output_dir)
-        return self._predict_for_text(text_file, output_dir=output_dir, dehyphen=dehyphen)
+        return self._predict_for_text(text_file, output_dir=output_dir, dehyphen=dehyphen, save_results=save_results)
