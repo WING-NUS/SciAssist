@@ -8,10 +8,10 @@ class BertForTokenClassifier(nn.Module):
     def __init__(
         self,
         model_checkpoint: str = "allenai/scibert_scivocab_uncased",
-        output_size: int = 19,
+        output_size: int = 13,
         cache_dir: str = ".cache",
         save_name: str = "scibert_uncased.pt",
-        model_dir: str = "models"
+        model_dir: str = "pretrained"
     ):
         super().__init__()
         self.save_name = save_name

@@ -9,7 +9,7 @@ class BartForSummarization(nn.Module):
         model_checkpoint: str = "facebook/bart-large-cnn",
         cache_dir: str = ".cache",
         save_name: str = "bart-large-cnn-mup.pt",
-        model_dir: str = "models"
+        model_dir: str = "pretrained"
     ):
         super().__init__()
         self.save_name = save_name
