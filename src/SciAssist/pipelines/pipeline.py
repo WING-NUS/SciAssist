@@ -1,3 +1,5 @@
+# main developer: Yixi Ding <dingyixi@hotmail.com>
+
 import torch
 
 from SciAssist import BASE_CACHE_DIR

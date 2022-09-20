@@ -1,3 +1,5 @@
+# main developer: Yixi Ding <dingyixi@hotmail.com>
+
 from typing import Dict
 
 import torch
