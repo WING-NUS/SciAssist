@@ -12,18 +12,19 @@ from torchmetrics.classification.accuracy import Accuracy
 
 from SciAssist.datamodules.components.cora_label import num_labels, LABEL_NAMES
 from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
-from SciAssist.utils.pad_for_token_level import postprocess
+from SciAssist.utils.data_utils import DataUtilsForTokenClassification
 
 
 class CoraLitModule(LightningModule):
     def __init__(
         self,
         model: BertForTokenClassifier,
+        data_utils: DataUtilsForTokenClassification,
         lr: float = 2e-5,
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
-
+        self.data_utils = data_utils
         self.model = model
 
         # num_classes + 1 to account for the extra class used for padding
@@ -71,7 +72,7 @@ class CoraLitModule(LightningModule):
     def validation_step(self, batch: Any, batch_idx: int):
         loss, preds, labels = self.step(batch)
 
-        true_preds, true_labels = postprocess(preds, labels, LABEL_NAMES)
+        true_preds, true_labels = self.data_utils.postprocess(preds, labels, LABEL_NAMES)
         true_labels = torch.flatten(true_labels)
         true_preds = torch.flatten(true_preds)
 
@@ -109,7 +110,7 @@ class CoraLitModule(LightningModule):
     def test_step(self, batch: Any, batch_idx: int):
         loss, preds, labels = self.step(batch)
 
-        true_preds, true_labels = postprocess(preds, labels, LABEL_NAMES)
+        true_preds, true_labels = self.data_utils.postprocess(preds, labels, LABEL_NAMES)
 
         device = self.val_acc.device
         true_labels = torch.flatten(true_labels).to(device)

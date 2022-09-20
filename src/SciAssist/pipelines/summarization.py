@@ -2,27 +2,37 @@ import os
 from typing import List, Tuple, Optional
 
 from datasets import Dataset
-from torch.utils.data import DataLoader
-from transformers import DataCollatorForSeq2Seq
 
 from SciAssist import BASE_CACHE_DIR, BASE_TEMP_DIR, BASE_OUTPUT_DIR
-from SciAssist.models.components.bart_tokenizer import BartTokenizer
-from SciAssist.pipelines.Pipeline import Pipeline
-from SciAssist.utils.pad_for_seq2seq import tokenize_and_align_labels
+from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 
 
-class Summarization(Pipeline):
+class SingleSummarization(Pipeline):
 
     def __init__(
             self, model_name: str = "default", device = "gpu",
             cache_dir = BASE_CACHE_DIR,
             output_dir = BASE_OUTPUT_DIR,
-            temp_dir = BASE_TEMP_DIR
+            temp_dir = BASE_TEMP_DIR,
+            tokenizer=None,
+            checkpoint="facebook/bart-large-cnn",
+            model_max_length=1024,
+            max_source_length=1024,
+            max_target_length=128
     ):
         super().__init__(task_name="summarization", model_name=model_name, device=device, cache_dir=cache_dir)
         self.output_dir = output_dir
         self.temp_dir = temp_dir
+        self.data_utils = self.data_utils(
+            tokenizer = tokenizer,
+            model_class = self.config["model"],
+            checkpoint = checkpoint,
+            model_max_length = model_max_length,
+            max_source_length = max_source_length,
+            max_target_length = max_target_length
+        )
+        self.tokenizer = self.data_utils.tokenizer
 
     def predict(
             self, input: str, type: str = "pdf",
@@ -71,16 +81,7 @@ class Summarization(Pipeline):
         dataset = Dataset.from_dict(dict_data)
 
         # Tokenize for Bart, get input_ids and attention_masks
-        tokenized_example = dataset.map(
-            lambda x: tokenize_and_align_labels(x),
-            batched=True,
-            remove_columns=dataset.column_names
-        )
-        dataloader = DataLoader(
-            dataset=tokenized_example,
-            batch_size=8,
-            collate_fn=DataCollatorForSeq2Seq(self.config["tokenizer"], model=self.config["model"], pad_to_multiple_of=8)
-        )
+        dataloader = self.data_utils.get_dataloader(dataset)
 
         results = []
         for batch in dataloader:
@@ -90,7 +91,7 @@ class Summarization(Pipeline):
             # Get token ids of summary
             pred = self.model.generate(batch["input_ids"], batch["attention_mask"],num_beams)
             # Convert token ids to text
-            decoded_preds = BartTokenizer.batch_decode(pred, skip_special_tokens=True)
+            decoded_preds = self.tokenizer.batch_decode(pred, skip_special_tokens=True)
 
             results.extend(decoded_preds)
 

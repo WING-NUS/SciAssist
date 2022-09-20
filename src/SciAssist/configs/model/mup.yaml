@@ -1,5 +1,8 @@
 _target_: SciAssist.models.mup_bart_module.MupBartLitModule
 lr: 5e-5
+data_utils:
+  _target_: SciAssist.utils.data_utils.DataUtilsForSeq2Seq
+
 model:
   _target_: SciAssist.models.components.bart_summarization.BartForSummarization
   model_checkpoint: "facebook/bart-large-cnn"

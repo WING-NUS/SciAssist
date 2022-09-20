@@ -3,7 +3,7 @@ import csv
 from datasets import Dataset
 
 
-def csv_reader(filename: str):
+def csv_reader(filename: str, encoding = 'ISO-8859-1'):
     """
 
     Args:
@@ -19,7 +19,7 @@ def csv_reader(filename: str):
 
     """
     data_set = {}
-    with open(filename, 'r', newline='') as f:
+    with open(filename, 'r', newline='', encoding=encoding) as f:
         rows = csv.reader(f)
         # Get Column names
         keys = next(rows)

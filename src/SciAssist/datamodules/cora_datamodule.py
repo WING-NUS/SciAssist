@@ -6,7 +6,7 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
 from SciAssist.datamodules.components.cora_label import num_labels, label2id
-from SciAssist.utils.pad_for_token_level import tokenize_and_align_labels, pad
+from SciAssist.utils.data_utils import DataUtilsForTokenClassification
 
 
 class CoraDataModule(LightningDataModule):
@@ -17,11 +17,14 @@ class CoraDataModule(LightningDataModule):
         num_workers: int = 0,
         pin_memory: bool = False,
         data_cache_dir: str = ".cache",
-        seed: int = 777
+        seed: int = 777,
+        data_utils = DataUtilsForTokenClassification(),
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
-        self.data_collator = pad
+        self.data_utils = data_utils
+        self.data_collator = self.data_utils.collator()
+
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
@@ -41,7 +44,7 @@ class CoraDataModule(LightningDataModule):
         if not self.data_train and not self.data_val and not self.data_test:
             processed_datasets = self.prepare_data()
             tokenized_datasets = processed_datasets.map(
-                lambda x: tokenize_and_align_labels(x, label2id),
+                lambda x: self.data_utils.tokenize_and_align_labels(x, label2id),
                 batched=True,
                 remove_columns=processed_datasets["train"].column_names,
                 load_from_cache_file=True

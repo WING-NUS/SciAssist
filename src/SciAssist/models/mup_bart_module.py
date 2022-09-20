@@ -8,19 +8,21 @@ from torchmetrics import MaxMetric
 from torchmetrics.text.rouge import ROUGEScore
 from transformers import AutoModelForSeq2SeqLM
 
-from SciAssist.models.components.bart_tokenizer import BartTokenizer
-from SciAssist.utils.pad_for_seq2seq import postprocess
+from SciAssist.utils.data_utils import DataCollatorForSeq2Seq
 
 
 class MupBartLitModule(LightningModule):
     def __init__(
         self,
         model: AutoModelForSeq2SeqLM,
+        data_utils = DataCollatorForSeq2Seq,
         lr: float = 2e-5,
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
+        self.data_utils = data_utils
         self.model = model
+
         self.val_metric = ROUGEScore(use_stemmer=True)
         self.val_best_Rouge1 = MaxMetric()
         self.test_metric = ROUGEScore(use_stemmer=True)
@@ -70,7 +72,7 @@ class MupBartLitModule(LightningModule):
         # Get prediction ids sequence
         preds = self.model.generate(input_ids=input_ids,attention_mask=attention_mask)
         # Convert ids to strings
-        decoded_preds, decoded_labels = postprocess(preds, labels)
+        decoded_preds, decoded_labels = self.data_utils.postprocess(preds, labels)
 
         # Compute Rouge Metrics
         rouge_metric = self.val_metric(preds=decoded_preds, target=decoded_labels)
@@ -78,7 +80,7 @@ class MupBartLitModule(LightningModule):
         result = {key: value * 100 for key, value in rouge_metric.items()}
 
         # Compute average length of summaries
-        self.val_gen_lens.extend([np.count_nonzero(pred != BartTokenizer.pad_token_id) for pred in preds.to("cpu")])
+        self.val_gen_lens.extend([np.count_nonzero(pred != self.data_utils.tokenizer.pad_token_id) for pred in preds.to("cpu")])
 
         #  Log results
         self.log("val/Rouge-1", result["rouge1_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
@@ -121,7 +123,7 @@ class MupBartLitModule(LightningModule):
         if "labels" not in batch.keys():
             # Simply do prediction
             preds = self.model.generate(input_ids=input_ids, attention_mask=attention_mask)
-            decoded_preds = BartTokenizer.batch_decode(preds, skip_special_tokens=True)
+            decoded_preds = self.data_utils.tokenizer.batch_decode(preds, skip_special_tokens=True)
             result["preds"] = decoded_preds
 
         else:
@@ -130,7 +132,7 @@ class MupBartLitModule(LightningModule):
             labels = batch["labels"]
             preds = self.model.generate(input_ids=input_ids, attention_mask=attention_mask)
             # Convert ids to strings
-            decoded_preds, decoded_labels = postprocess(preds, labels)
+            decoded_preds, decoded_labels = self.data_utils.postprocess(preds, labels)
 
             # Compute Rouge Metrics
             rouge_metric = self.test_metric(preds=decoded_preds, target=decoded_labels)
@@ -144,7 +146,7 @@ class MupBartLitModule(LightningModule):
             self.log("test/Rouge-Lsum", result["rougeLsum_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
 
         # Compute average length of summaries
-        self.test_gen_lens.extend([np.count_nonzero(pred != BartTokenizer.pad_token_id) for pred in preds.to("cpu")])
+        self.test_gen_lens.extend([np.count_nonzero(pred != self.data_utils.tokenizer.pad_token_id) for pred in preds.to("cpu")])
         return result
 
 

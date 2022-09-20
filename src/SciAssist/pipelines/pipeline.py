@@ -18,3 +18,5 @@ class Pipeline():
             self.model.cuda()
         else:
             self.device = torch.device("cpu")
+
+        self.data_utils = self.config["data_utils"]

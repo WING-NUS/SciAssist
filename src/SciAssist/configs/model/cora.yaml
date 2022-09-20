@@ -1,5 +1,7 @@
 _target_: SciAssist.models.cora_module.CoraLitModule
 lr: 2e-5
+data_utils:
+  _target_: SciAssist.utils.data_utils.DataUtilsForTokenClassification
 
 model:
   _target_: SciAssist.models.components.bert_token_classifier.BertForTokenClassifier

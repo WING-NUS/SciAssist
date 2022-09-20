@@ -8,4 +8,4 @@ BASE_TEMP_DIR = os.path.join(ROOT_DIR,"output/.temp")
 BASE_CACHE_DIR = os.path.join(os.environ["HOME"],".cache/sciassist")
 
 from SciAssist.pipelines.reference_string_parsing import ReferenceStringParsing
-from SciAssist.pipelines.summarization import Summarization
+from SciAssist.pipelines.summarization import SingleSummarization

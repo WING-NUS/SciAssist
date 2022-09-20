@@ -5,6 +5,10 @@ import torch
 from SciAssist import BASE_CACHE_DIR
 from SciAssist.models.components.bart_summarization import BartForSummarization
 from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
+from SciAssist.utils.data_utils import (
+    DataUtilsForTokenClassification,
+    DataUtilsForSeq2Seq,
+)
 
 # Provided models for each task
 TASKS = {
@@ -12,10 +16,12 @@ TASKS = {
         "scibert-on-cora":  {
             "model": BertForTokenClassifier,
             "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/scibert-uncased.pt",
+            "data_utils": DataUtilsForTokenClassification
         },
         "default": {
             "model": BertForTokenClassifier,
             "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/scibert-uncased.pt",
+            "data_utils": DataUtilsForTokenClassification,
         },
     },
 
@@ -23,10 +29,12 @@ TASKS = {
         "bart-cnn-on-mup": {
             "model": BartForSummarization,
             "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/bart-large-cnn-e5.pt",
+            "data_utils": DataUtilsForSeq2Seq,
         },
         "default": {
             "model": BartForSummarization,
             "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/bart-large-cnn-e5.pt",
+            "data_utils": DataUtilsForSeq2Seq,
         }
     }
 

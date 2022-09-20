@@ -2,13 +2,11 @@ import os
 from typing import List, Tuple, Optional
 
 from datasets import Dataset
-from torch.utils.data import DataLoader
 
 from SciAssist import BASE_OUTPUT_DIR, BASE_TEMP_DIR, BASE_CACHE_DIR
 from SciAssist.datamodules.components.cora_label import LABEL_NAMES
 from SciAssist.datamodules.components.cora_label import label2id
-from SciAssist.pipelines.Pipeline import Pipeline
-from SciAssist.utils.pad_for_token_level import pad, tokenize_and_align_labels
+from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_reference
 
 
@@ -18,11 +16,19 @@ class ReferenceStringParsing(Pipeline):
             self, model_name: str = "default", device = "gpu",
             cache_dir = BASE_CACHE_DIR,
             output_dir = BASE_OUTPUT_DIR,
-            temp_dir = BASE_TEMP_DIR
+            temp_dir = BASE_TEMP_DIR,
+            tokenizer = None,
+            checkpoint="allenai/scibert_scivocab_uncased",
+            model_max_length=512,
     ):
         super().__init__(task_name="reference-string-parsing", model_name=model_name, device=device, cache_dir=cache_dir)
         self.output_dir = output_dir
         self.temp_dir = temp_dir
+        self.data_utils = self.data_utils(
+            tokenizer = tokenizer,
+            checkpoint = checkpoint,
+            model_max_length = model_max_length
+        )
 
     def predict(
             self, input: str, type: str = "pdf", dehyphen = False,
@@ -79,17 +85,8 @@ class ReferenceStringParsing(Pipeline):
         dict_data = {"tokens": examples}
         dataset = Dataset.from_dict(dict_data)
 
-        #Tokenize for Bert
-        tokenized_example = dataset.map(
-            lambda x: tokenize_and_align_labels(x, label2id),
-            batched=True,
-            remove_columns=dataset.column_names
-        )
-        dataloader = DataLoader(
-            dataset=tokenized_example,
-            batch_size=8,
-            collate_fn=pad
-        )
+        dataloader = self.data_utils.get_dataloader(dataset, label2id=label2id)
+
         results = []
         true_preds = []
         for batch in dataloader:

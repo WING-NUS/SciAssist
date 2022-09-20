@@ -4,12 +4,9 @@ import datasets
 from datasets import Dataset, DatasetDict
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
-from transformers import DataCollatorForSeq2Seq
 
-from SciAssist.models.components.bart_summarization import BartForSummarization
-from SciAssist.models.components.bart_tokenizer import BartTokenizer
 from SciAssist.utils.data_reader import csv_reader
-from SciAssist.utils.pad_for_seq2seq import tokenize_and_align_labels
+from SciAssist.utils.data_utils import DataUtilsForSeq2Seq
 
 
 class MupDataModule(LightningDataModule):
@@ -20,11 +17,14 @@ class MupDataModule(LightningDataModule):
         num_workers: int = 0,
         pin_memory: bool = False,
         data_cache_dir: str = ".cache",
-        seed: int = 777
+        seed: int = 777,
+        data_utils = DataUtilsForSeq2Seq
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
-        self.data_collator = DataCollatorForSeq2Seq(BartTokenizer, model=BartForSummarization, pad_to_multiple_of=8)
+        self.data_utils = data_utils
+        self.data_collator = self.data_utils.collator()
+
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
@@ -43,15 +43,15 @@ class MupDataModule(LightningDataModule):
         if not self.data_train and not self.data_val and not self.data_test:
             processed_datasets = self.prepare_data()
             tokenized_datasets = processed_datasets.map(
-                lambda x: tokenize_and_align_labels(x, inputs_column="text", labels_column="summary"),
+                lambda x: self.data_utils.tokenize_and_align_labels(x, inputs_column="text", labels_column="summary"),
                 batched=True,
                 remove_columns=processed_datasets["train"].column_names,
                 load_from_cache_file=True
             )
-            self.data_train = tokenized_datasets["train"]
-            self.data_val = tokenized_datasets["validation"]
+            self.data_train = tokenized_datasets["train"].select(range(10))
+            self.data_val = tokenized_datasets["validation"].select(range(10))
             # If labels are not provided, delete the column "labels"
-            self.data_test = tokenized_datasets["test"].remove_columns("labels")
+            self.data_test = tokenized_datasets["test"].remove_columns("labels").select(range(10))
 
     def train_dataloader(self):
         return DataLoader(
