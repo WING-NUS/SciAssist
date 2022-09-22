@@ -6,11 +6,14 @@ from typing import List, Dict, Tuple
 
 import bs4
 from bs4 import BeautifulSoup, NavigableString
-from doc2json.s2orc import Paper
-from doc2json.utils.citation_util import SINGLE_BRACKET_REGEX, BRACKET_REGEX, BRACKET_STYLE_THRESHOLD
-from doc2json.utils.citation_util import is_expansion_string, _clean_empty_and_duplicate_authors_from_grobid_parse
-from doc2json.utils.grobid_util import parse_bib_entry, extract_paper_metadata_from_grobid_xml
-from doc2json.utils.refspan_util import sub_spans_and_update_indices
+
+from SciAssist.bin.doc2json.doc2json.s2orc import Paper
+from SciAssist.bin.doc2json.doc2json.utils.citation_util import SINGLE_BRACKET_REGEX, BRACKET_REGEX, \
+    BRACKET_STYLE_THRESHOLD
+from SciAssist.bin.doc2json.doc2json.utils.citation_util import is_expansion_string, \
+    _clean_empty_and_duplicate_authors_from_grobid_parse
+from SciAssist.bin.doc2json.doc2json.utils.grobid_util import parse_bib_entry, extract_paper_metadata_from_grobid_xml
+from SciAssist.bin.doc2json.doc2json.utils.refspan_util import sub_spans_and_update_indices
 
 REPLACE_TABLE_TOKS = {
     "<row>": "<tr>",

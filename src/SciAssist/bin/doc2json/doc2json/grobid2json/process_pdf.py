@@ -5,8 +5,10 @@ import time
 from typing import Optional, Dict
 
 from bs4 import BeautifulSoup
-from doc2json.grobid2json.grobid.grobid_client import GrobidClient
-from doc2json.grobid2json.tei_to_json import convert_tei_xml_file_to_s2orc_json, convert_tei_xml_soup_to_s2orc_json
+
+from SciAssist.bin.doc2json.doc2json.grobid2json.grobid.grobid_client import GrobidClient
+from SciAssist.bin.doc2json.doc2json.grobid2json.tei_to_json import convert_tei_xml_file_to_s2orc_json, \
+    convert_tei_xml_soup_to_s2orc_json
 
 BASE_TEMP_DIR = 'temp/tei_xml'
 BASE_OUTPUT_DIR = 'temp/pdf'

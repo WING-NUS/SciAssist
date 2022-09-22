@@ -7,7 +7,7 @@ import os
 import time
 from typing import List
 
-from doc2json.grobid2json.grobid.client import ApiClient
+from SciAssist.bin.doc2json.doc2json.grobid2json.grobid.client import ApiClient
 
 '''
 This version uses the standard ProcessPoolExecutor for parallelizing the concurrent calls to the GROBID services.

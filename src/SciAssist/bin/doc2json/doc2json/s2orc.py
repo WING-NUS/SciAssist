@@ -5,7 +5,7 @@ S2ORC classes
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from doc2json.config import *
+from SciAssist.bin.doc2json.doc2json.config import *
 
 CORRECT_KEYS = {
     "issn": "issue",
