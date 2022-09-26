@@ -12,7 +12,7 @@ from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 
 class SingleSummarization(Pipeline):
     """
-    The pipeline for reference string parsing.
+    The pipeline for single document summarization.
 
     Args:
         model_name (`str`, *optional*):
@@ -58,7 +58,7 @@ class SingleSummarization(Pipeline):
             max_source_length=1024,
             max_target_length=128
     ):
-        super().__init__(task_name="summarization", model_name=model_name, device=device,
+        super().__init__(task_name="single-doc-summarization", model_name=model_name, device=device,
                          cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
 
         self.data_utils = self.data_utils(

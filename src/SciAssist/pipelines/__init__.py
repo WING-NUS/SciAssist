@@ -27,7 +27,7 @@ TASKS = {
         },
     },
 
-    "summarization": {
+    "single-doc-summarization": {
         "bart-cnn-on-mup": {
             "model": BartForSummarization,
             "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/bart-large-cnn-e5.pt",
