@@ -28,5 +28,12 @@ class BartForSummarization(nn.Module):
             logits=outputs.logits
         )
 
-    def generate(self, input_ids=None, attention_mask=None, num_beams=1):
-        return self.bart.generate(input_ids=input_ids, attention_mask=attention_mask, num_beams=num_beams)
+    def generate(self, input_ids=None, attention_mask=None, num_beams=1, num_return_sequences=1):
+        diversity_penalty = 0.0
+        if num_return_sequences>1:
+            diversity_penalty = 1.0
+        return self.bart.generate(input_ids=input_ids, attention_mask=attention_mask,
+                                  num_beams=num_beams,
+                                  num_return_sequences=num_return_sequences,
+                                  num_beam_groups=num_return_sequences,
+                                  diversity_penalty=diversity_penalty)
