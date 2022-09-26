@@ -64,5 +64,5 @@ def load_model(config: Dict, cache_dir=BASE_CACHE_DIR ):
     state_dict = torch.hub.load_state_dict_from_url(config["model_dict_url"], model_dir=cache_dir)
     model.load_state_dict(state_dict)
     model.eval()
-    print("Completed.")
+
     return model

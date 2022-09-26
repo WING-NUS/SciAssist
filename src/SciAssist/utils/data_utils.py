@@ -73,8 +73,11 @@ class DataUtilsForSeq2Seq():
         return model_inputs
 
     def collator(self):
+
         from SciAssist.models.components.bart_summarization import BartForSummarization
+
         return DataCollatorForSeq2Seq(self.tokenizer, model=BartForSummarization, pad_to_multiple_of=8)
+
     def postprocess(self, preds, labels):
 
         decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
@@ -104,7 +107,7 @@ class DataUtilsForSeq2Seq():
         dataloader = DataLoader(
             dataset=tokenized_example,
             batch_size=8,
-            collate_fn=DataCollatorForSeq2Seq(self.tokenizer, model=self.model_class, pad_to_multiple_of=8)
+            collate_fn=self.collator(),
         )
 
         return dataloader
@@ -310,7 +313,7 @@ class DataUtilsForTokenClassification():
         dataloader = DataLoader(
             dataset=tokenized_example,
             batch_size=8,
-            collate_fn=self.pad
+            collate_fn=self.collator(),
         )
 
         return dataloader

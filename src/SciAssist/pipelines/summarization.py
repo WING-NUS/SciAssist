@@ -1,59 +1,156 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
 
 import os
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 from datasets import Dataset
 
-from SciAssist import BASE_CACHE_DIR, BASE_TEMP_DIR, BASE_OUTPUT_DIR
+from SciAssist import BASE_TEMP_DIR, BASE_OUTPUT_DIR
 from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 
 
 class SingleSummarization(Pipeline):
+    """
+    The pipeline for reference string parsing.
+
+    Args:
+        model_name (`str`, *optional*):
+            A string, the *model name* of a pretrained model provided for this task.
+        device (`str`, *optional*):
+            A string, `cpu` or `gpu`.
+        cache_dir (`str` or `os.PathLike`, *optional*):
+            Path to a directory in which a downloaded pretrained model should be
+            cached if the standard cache should not be used.
+        output_dir (`str` or `os.PathLike`, *optional*):
+            Path to a directory in which the predicted results files should be stored.
+        temp_dir (`str` or `os.PathLike`, *optional*):
+            Path to a directory which holds temporary files such as `.tei.xml`.
+        tokenizer (PreTrainedTokenizer, *optional*):
+            A specific tokenizer.
+        checkpoint (`str` or `os.PathLike`, *optional*):
+            A checkpoint for the tokenizer. You can also specify the `checkpoint` while
+            using the default tokenizer.
+            Can be either:
+
+                - A string, the *model id* of a predefined tokenizer hosted inside a model repo on huggingface.co.
+                  Valid model ids can be located at the root-level, like `bert-base-uncased`, or namespaced under a
+                  user or organization name, like `facebook/bart-large-cnn`.
+                - A path to a *directory* containing vocabulary files required by the tokenizer, for instance saved
+                  using the [`~PreTrainedTokenizer.save_pretrained`] method, e.g., `./my_model_directory/`.
+                - A path or url to a single saved vocabulary file if and only if the tokenizer only requires a
+                  single vocabulary file (like Bert or XLNet), e.g.: `./my_model_directory/vocab.txt`. (Not
+                  applicable to all derived classes)
+
+        model_max_length (`int`, *optional*): The max sequence length the model accepts.
+        max_source_length (`int`, *optional*): The max length of the input text.
+        max_target_length (`int`, *optional*): The max length of the generated summary.
+    """
 
     def __init__(
-            self, model_name: str = "default", device = "gpu",
-            cache_dir = BASE_CACHE_DIR,
-            output_dir = BASE_OUTPUT_DIR,
-            temp_dir = BASE_TEMP_DIR,
+            self, model_name: str = "default", device="gpu",
+            cache_dir=None,
+            output_dir=None,
+            temp_dir=None,
             tokenizer=None,
             checkpoint="facebook/bart-large-cnn",
             model_max_length=1024,
             max_source_length=1024,
             max_target_length=128
     ):
-        super().__init__(task_name="summarization", model_name=model_name, device=device, cache_dir=cache_dir)
-        self.output_dir = output_dir
-        self.temp_dir = temp_dir
+        super().__init__(task_name="summarization", model_name=model_name, device=device,
+                         cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
+
         self.data_utils = self.data_utils(
-            tokenizer = tokenizer,
-            model_class = self.config["model"],
-            checkpoint = checkpoint,
-            model_max_length = model_max_length,
-            max_source_length = max_source_length,
-            max_target_length = max_target_length
+            tokenizer=tokenizer,
+            model_class=self.config["model"],
+            checkpoint=checkpoint,
+            model_max_length=model_max_length,
+            max_source_length=max_source_length,
+            max_target_length=max_target_length
         )
         self.tokenizer = self.data_utils.tokenizer
 
     def predict(
             self, input: str, type: str = "pdf",
-            output_dir = None,
-            temp_dir = None,
-            num_beams = 1,
-            save_results = False,
+            output_dir=None,
+            temp_dir=None,
+            num_beams=1,
+            num_return_sequences=1,
+            save_results=True,
     ):
+        """
+
+        Args:
+            input (`str` or `List[str]` or `os.PathLike`):
+            Can be either:
+
+                   - A string, the reference string to be parsed.
+                   - A list of strings to be parsed.
+                   - A path to a *.txt* file to be summarized.
+                   - A path to a *.pdf* file to be summarized, a raw scientific document without processing.
+                     The pipeline will automatically extract the body text from the pdf.
+
+            type (`str`, default to `pdf`):
+                The type of input, can be either:
+
+                    - `str` or `string`.
+                    - `text`or `txt` for a .txt file.
+                    - `pdf` for a pdf file. This is the default value.
+
+            output_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which the predicted results files should be stored.
+                If not provided, it will use the `output_dir` set for the pipeline.
+            temp_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory which holds temporary files such as `.tei.xml`.
+                If not provided, it will use the `temp_dir` set for the pipeline.
+            num_beams (`int`, *optional*):
+                Number of beams for beam search. 1 means no beam search.
+                `num_beams` should be divisible by `num_return_sequences` for group beam search.
+            num_return_sequences(`int`):
+                The number of independently computed returned sequences for each element in the batch.
+            save_results (`bool`, default to `True`):
+                Whether to save the tagged labels in a *.txt* file.
+                **Note**: This is invalid when `type` is set to `str` or `string`.
+
+        Returns:
+            `Dict`: { "summary": [summary1, summary2, ...], "raw_text": raw_text }
+
+
+        Examples:
+
+             >>> from SciAssist import SingleSummarization
+             >>> pipeline = SingleSummarization()
+             >>> res = pipeline.predict('N18-3011.pdf', type="pdf", num_beams=4, num_return_sequences=2)
+             >>> res["summary"]
+             ['The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction. ',
+             'The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction.  ']
+
+        """
+
         if output_dir is None:
             output_dir = self.output_dir
         if temp_dir is None:
             temp_dir = self.temp_dir
 
-        if type in ["str","string"]:
-            return self._summarize_for_string(example=input)
-        elif type in ["txt","text"]:
-            return self._summarize_for_text(filename=input, output_dir=output_dir, save_results=save_results)
+        if type in ["str", "string"]:
+            results = self._summarize_for_string(example=input, num_beams=num_beams,
+                                                 num_return_sequences=num_return_sequences)
+        elif type in ["txt", "text"]:
+            results = self._summarize_for_text(filename=input, num_beams=num_beams,
+                                               num_return_sequences=num_return_sequences)
         elif type == "pdf":
-            return self._summarize_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir, num_beams=num_beams, save_results=save_results)
+            results = self._summarize_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir,
+                                              num_beams=num_beams, num_return_sequences=num_return_sequences)
+        # Save predicted results as a text file
+        if save_results and type not in ["str", "string"]:
+            os.makedirs(output_dir, exist_ok=True)
+            output_file = os.path.basename(input)
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_summ.txt"), "w") as output:
+                for res in results["summary"]:
+                    output.write(res + "\n")
+
+        return results
 
     def _to_device(self, batch):
         if self.model_name in ["default", "bart-cnn-on-mup"]:
@@ -62,18 +159,18 @@ class SingleSummarization(Pipeline):
                 "attention_mask": batch["attention_mask"].to(self.device),
             }
 
-
     def _summarize(
             self,
             examples: List[str],
-            num_beams = 1
+            num_beams=1,
+            num_return_sequences=1
     ) -> List[str]:
         """
         Summarize each text in the list.
         Args:
             examples(`List[str]`): A list of texts to be summarized
             num_beams(`int`): Number of beams for beam search. 1 means no beam search.
-
+            num_return_sequences(`int`): The number of independently computed returned sequences for each element in the batch.
         Returns:
             `List[str]`: A list of the summarization, each item corresponds to a text in the list.
         """
@@ -87,11 +184,10 @@ class SingleSummarization(Pipeline):
 
         results = []
         for batch in dataloader:
-
             batch = self._to_device(batch)
 
             # Get token ids of summary
-            pred = self.model.generate(batch["input_ids"], batch["attention_mask"],num_beams)
+            pred = self.model.generate(batch["input_ids"], batch["attention_mask"], num_beams, num_return_sequences)
             # Convert token ids to text
             decoded_preds = self.tokenizer.batch_decode(pred, skip_special_tokens=True)
 
@@ -102,7 +198,8 @@ class SingleSummarization(Pipeline):
     def _summarize_for_string(
             self,
             example: str,
-            num_beams = 1
+            num_beams=1,
+            num_return_sequences=1
     ) -> Tuple[str, str]:
 
         """
@@ -111,22 +208,21 @@ class SingleSummarization(Pipeline):
         Args:
             example (`str`): The string to summarize.
             num_beams (`int`): Number of beams for beam search. 1 means no beam search.
+            num_return_sequences(`int`): The number of independently computed returned sequences for each element in the batch.
         Returns:
            `Tuple[str, str]`:
                 Predicted summarization and source text.
 
         """
-        res = self._summarize([example], num_beams)
+        res = self._summarize([example], num_beams, num_return_sequences)
 
-        return  res[0], example
-
+        return {"summary": res, "raw_text": example}
 
     def _summarize_for_text(
             self,
             filename: str,
             num_beams: int = 1,
-            output_dir: Optional[str] = BASE_OUTPUT_DIR,
-            save_results: Optional[bool] = False,
+            num_return_sequences: int = 1
     ) -> Tuple[str, str]:
         """
 
@@ -135,6 +231,7 @@ class SingleSummarization(Pipeline):
         Args:
             num_beams (`int`): Number of beams for beam search. 1 means no beam search.
             filename (`str`): The path to the input text file.
+            num_return_sequences(`int`): The number of independently computed returned sequences for each element in the batch.
 
         Returns:
             `Tuple[str, str]`:
@@ -144,18 +241,10 @@ class SingleSummarization(Pipeline):
 
         with open(filename, "r") as f:
             examples = f.readlines()
-        examples = ["".join(examples)]
-        res = self._summarize(examples, num_beams)
+        examples = [" ".join(examples)]
+        res = self._summarize(examples, num_beams, num_return_sequences)
 
-        # Save predicted results as a text file
-        if save_results:
-            os.makedirs(output_dir, exist_ok=True)
-            output_file = os.path.basename(filename)
-            with open(os.path.join(output_dir, f"{output_file[:-4]}_summ.txt"), "w") as output:
-                output.write(res[0] + "\n")
-
-        return res[0], examples
-
+        return {"summary": res, "raw_text": examples[0]}
 
     def _summarize_for_pdf(
             self,
@@ -163,8 +252,8 @@ class SingleSummarization(Pipeline):
             temp_dir: Optional[str] = BASE_TEMP_DIR,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
             num_beams: int = 1,
-            save_results: Optional[bool] = False
-    ) -> Tuple[str, str]:
+            num_return_sequences=1
+    ) -> Dict:
         """
         Summarize a document from a PDF file.
 
@@ -172,9 +261,10 @@ class SingleSummarization(Pipeline):
             filename (`str`): The path to the pdf file to summarize.
             temp_dir (`Optional[str]`): The diretorcy to save intermediate file, default to `temp/`.
             output_dir (`Optional[str]`): The diretorcy to save text file, default to `output/`.
+            num_return_sequences(`int`): The number of independently computed returned sequences for each element in the batch.
 
         Returns:
-            `Tuple[str, str]`:
+            `Dict`:
                 Predicted summarization and source text.
         """
 
@@ -183,4 +273,4 @@ class SingleSummarization(Pipeline):
         # Extract bodytext from pdf and save them in TEXT format.
         text_file = get_bodytext(json_file=json_file, output_dir=output_dir)
         # Do summarization
-        return self._summarize_for_text(text_file, num_beams=num_beams, save_results=save_results)
+        return self._summarize_for_text(text_file, num_beams=num_beams, num_return_sequences=num_return_sequences)
