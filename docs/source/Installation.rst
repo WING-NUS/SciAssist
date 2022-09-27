@@ -22,6 +22,9 @@ Activate the virtual environment.
     
     source .env/bin/activate
 
+Option:
+    You may need to install pytorch according to `instructions <https://pytorch.org/get-started/>`_.
+
 Now you're ready to install SciAssist with pip:
 
 .. code-block:: bash
