@@ -8,8 +8,27 @@ from SciAssist.pipelines import TASKS, load_model
 
 class Pipeline():
 
+    """
+
+    Args:
+        task_name (`str`):
+            The task name, which is used to load model configs.
+        model_name (`str`, *optional*):
+            A string, the *model name* of a pretrained model provided for this task.
+        device (`str`, *optional*):
+            A string, `cpu` or `gpu`.
+        cache_dir (`str` or `os.PathLike`, *optional*, default to "~/.cache/sciassist"):
+            Path to a directory in which a downloaded pretrained model should be
+            cached if the standard cache should not be used.
+        output_dir (`str` or `os.PathLike`, *optional*, default to "output/result" from current work directory):
+            Path to a directory in which the predicted results files should be stored.
+        temp_dir (`str` or `os.PathLike`, *optional*, default to "output/.temp" from current work directory):
+            Path to a directory which holds temporary files such as `.tei.xml`.
+
+    """
+
     def __init__(self, task_name: str, model_name: str = "default", device="gpu",
-                 cache_dir=BASE_CACHE_DIR, output_dir=BASE_OUTPUT_DIR, temp_dir=BASE_TEMP_DIR):
+                 cache_dir=None, output_dir=None, temp_dir=None):
 
         self.device = device
         self.cache_dir = cache_dir if cache_dir is not None else BASE_CACHE_DIR

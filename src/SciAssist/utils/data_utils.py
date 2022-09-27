@@ -13,6 +13,18 @@ from SciAssist.models.components.bart_summarization import BartForSummarization
 
 
 class DataUtilsForSeq2Seq():
+    """
+
+    Args:
+        tokenizer (`PretrainedTokenizer`, default to None):
+            The tokenizer for tokenization.
+        checkpoint (`str`):
+            The checkpoint from which the tokenizer is loaded.
+        model_max_length (`int`, *optional*): The max sequence length the model accepts.
+        max_source_length (`int`, *optional*): The max length of the input text.
+        max_target_length (`int`, *optional*): The max length of the generated summary.
+    """
+
 
     def __init__(self, tokenizer = None, model_class = BartForSummarization,
                  checkpoint = "facebook/bart-large-cnn",
@@ -27,7 +39,7 @@ class DataUtilsForSeq2Seq():
         self.max_target_length = max_target_length
         self.model_class = model_class
 
-        if tokenizer == None:
+        if tokenizer is None:
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.checkpoint,
                 model_max_length = self.model_max_length,
@@ -39,19 +51,21 @@ class DataUtilsForSeq2Seq():
 
 
     def tokenize_and_align_labels(self, examples, inputs_column="text", labels_column="summary"):
+
         """
+
+        Process the dataset for model input, for example, do tokenization and prepare label_ids.
+
         Args:
-            examples: Dataset, {"text":[s1,s2..],"summary":[l1,l2..]}
-            inputs(str): The name of input column
-            labels(str): The name of target column
+            examples (`Dataset`): { "text": [s1, s2, ...], "summary": [l1, l2, ...]}
+            inputs (`str`): The name of input column
+            labels (`str`): The name of target column
 
         Returns:
-            Dict{
-                "input_ids": input_ids,
-                "attention_mask":,
-                "labels": label_ids,
-            }
+            `Dict`: {"input_ids": input_ids, "attention_mask": attention_mask, "labels": label_ids }
+
         """
+
         # Select input column
         inputs = examples[inputs_column]
 
@@ -74,11 +88,35 @@ class DataUtilsForSeq2Seq():
 
     def collator(self):
 
+        """
+
+        The collating function.
+
+        Returns:
+            `function`: A collating function.
+
+            For example, **DataCollatorForSeq2Seq(...)**.
+
+            You can also custom a collating function, but remember that `collator()` needs to return a **function**.
+        """
+
         from SciAssist.models.components.bart_summarization import BartForSummarization
 
         return DataCollatorForSeq2Seq(self.tokenizer, model=BartForSummarization, pad_to_multiple_of=8)
 
     def postprocess(self, preds, labels):
+
+        """
+        Process model's outputs and get the final results rather than simple ids.
+
+        Args:
+            preds (Tensor): Prediction labels, the output of the model.
+            labels (Tensor): True labels
+
+        Returns:
+            `(LongTensor, LongTensor)`: decoded_preds, decoded_labels
+
+        """
 
         decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
 
@@ -98,6 +136,18 @@ class DataUtilsForSeq2Seq():
         return decoded_preds, decoded_labels
 
     def get_dataloader(self, dataset, inputs_column="text", labels_column="summary"):
+
+        """
+        Generate DataLoader for a dataset.
+
+        Args:
+            dataset (`Dataset`): The raw dataset.
+            inputs_column (`str`): Column name of the inputs.
+            labels_column (`str`): Column name of the labels.
+
+        Returns:
+            `DataLoader`: A dataloader for the dataset. Will be used for inference.
+        """
 
         tokenized_example = dataset.map(
             lambda x: self.tokenize_and_align_labels(x, inputs_column=inputs_column, labels_column=labels_column),
