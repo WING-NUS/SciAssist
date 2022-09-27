@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; SciAssist 0.0.4 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Models" href="Models.html" />
+    <link rel="prev" title="Installation" href="Installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> SciAssist
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-usage">Pipeline usage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#choose-a-model-and-tokenizer">Choose a model and tokenizer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#the-task-specific-pipelines">The task-specific pipelines</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#reference-string-parsing">Reference string parsing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#single-document-summarization">Single document summarization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Contribution.html">Contributing Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SciAssist</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h1>
+<div class="section" id="api">
+<span id="id1"></span><h2>API<a class="headerlink" href="#api" title="Permalink to this heading"></a></h2>
+<div class="section" id="pipeline-usage">
+<h3>Pipeline usage<a class="headerlink" href="#pipeline-usage" title="Permalink to this heading"></a></h3>
+<p>SciAssist provides pipelines to make it simple
+to use any provided model for inference on various tasks.</p>
+<p>Each task is associated with a pipeline,
+and the pipeline automatically loads a default model capable of inference for your task.</p>
+<ol class="arabic simple">
+<li><p>Start by creating a task-specific pipeline. Taking <code class="docutils literal notranslate"><span class="pre">reference</span> <span class="pre">string</span> <span class="pre">parsing</span></code> as example:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">SciAssist</span> <span class="kn">import</span> <span class="n">ReferenceStringParsing</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">ReferenceStringParsing</span><span class="p">()</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Pass your input string to the pipeline:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;Waleed Ammar, Matthew E. Peters, Chandra Bhagavat- ula, and Russell Power. 2017. The ai2 system at semeval-2017 task 10 (scienceie): semi-supervised end-to-end entity and relation extraction. In ACL workshop (SemEval).&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;str&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">[{&#39;tagged_text&#39;: &#39;&lt;author&gt;Waleed&lt;/author&gt; &lt;author&gt;Ammar,&lt;/author&gt; &lt;author&gt;Matthew&lt;/author&gt; &lt;author&gt;E.&lt;/author&gt; &lt;author&gt;Peters,&lt;/author&gt; &lt;author&gt;Chandra&lt;/author&gt; &lt;author&gt;Bhagavat-&lt;/author&gt; &lt;author&gt;ula,&lt;/author&gt; &lt;author&gt;and&lt;/author&gt; &lt;author&gt;Russell&lt;/author&gt; &lt;author&gt;Power.&lt;/author&gt; &lt;date&gt;2017.&lt;/date&gt; &lt;title&gt;The&lt;/title&gt; &lt;title&gt;ai2&lt;/title&gt; &lt;title&gt;system&lt;/title&gt; &lt;title&gt;at&lt;/title&gt; &lt;title&gt;semeval-2017&lt;/title&gt; &lt;title&gt;task&lt;/title&gt; &lt;title&gt;10&lt;/title&gt; &lt;title&gt;(scienceie):&lt;/title&gt; &lt;title&gt;semi-supervised&lt;/title&gt; &lt;title&gt;end-to-end&lt;/title&gt; &lt;title&gt;entity&lt;/title&gt; &lt;title&gt;and&lt;/title&gt; &lt;title&gt;relation&lt;/title&gt; &lt;title&gt;extraction.&lt;/title&gt; &lt;booktitle&gt;In&lt;/booktitle&gt; &lt;booktitle&gt;ACL&lt;/booktitle&gt; &lt;booktitle&gt;workshop&lt;/booktitle&gt; &lt;booktitle&gt;(SemEval).&lt;/booktitle&gt;&#39;,</span>
+<span class="go">&#39;tokens&#39;: [&#39;Waleed&#39;, &#39;Ammar,&#39;, &#39;Matthew&#39;, &#39;E.&#39;, &#39;Peters,&#39;, &#39;Chandra&#39;, &#39;Bhagavat-&#39;, &#39;ula,&#39;, &#39;and&#39;, &#39;Russell&#39;, &#39;Power.&#39;, &#39;2017.&#39;, &#39;The&#39;, &#39;ai2&#39;, &#39;system&#39;, &#39;at&#39;, &#39;semeval-2017&#39;, &#39;task&#39;, &#39;10&#39;, &#39;(scienceie):&#39;, &#39;semi-supervised&#39;, &#39;end-to-end&#39;, &#39;entity&#39;, &#39;and&#39;, &#39;relation&#39;, &#39;extraction.&#39;, &#39;In&#39;, &#39;ACL&#39;, &#39;workshop&#39;, &#39;(SemEval).&#39;],</span>
+<span class="go">&#39;tags&#39;: [&#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;date&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;]}]</span>
+</pre></div>
+</div>
+<p>If you have more than one string, use <code class="docutils literal notranslate"><span class="pre">predict()</span></code> and pass your input as a list:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="s2">&quot;Waleed Ammar, Matthew E. Peters, Chandra Bhagavat- ula, and Russell Power. 2017. The ai2 system at semeval-2017 task 10 (scienceie): semi-supervised end-to-end entity and relation extraction. In ACL workshop (SemEval).&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;Isabelle Augenstein, Mrinal Das, Sebastian Riedel, Lakshmi Vikraman, and Andrew D. McCallum. 2017. Semeval 2017 task 10 (scienceie): Extracting keyphrases and relations from scientific publications. In ACL workshop (SemEval).&quot;</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;str&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">[{&#39;tagged_text&#39;: &#39;&lt;author&gt;Waleed&lt;/author&gt; &lt;author&gt;Ammar,&lt;/author&gt; &lt;author&gt;Matthew&lt;/author&gt; &lt;author&gt;E.&lt;/author&gt; &lt;author&gt;Peters,&lt;/author&gt; &lt;author&gt;Chandra&lt;/author&gt; &lt;author&gt;Bhagavat-&lt;/author&gt; &lt;author&gt;ula,&lt;/author&gt; &lt;author&gt;and&lt;/author&gt; &lt;author&gt;Russell&lt;/author&gt; &lt;author&gt;Power.&lt;/author&gt; &lt;date&gt;2017.&lt;/date&gt; &lt;title&gt;The&lt;/title&gt; &lt;title&gt;ai2&lt;/title&gt; &lt;title&gt;system&lt;/title&gt; &lt;title&gt;at&lt;/title&gt; &lt;title&gt;semeval-2017&lt;/title&gt; &lt;title&gt;task&lt;/title&gt; &lt;title&gt;10&lt;/title&gt; &lt;title&gt;(scienceie):&lt;/title&gt; &lt;title&gt;semi-supervised&lt;/title&gt; &lt;title&gt;end-to-end&lt;/title&gt; &lt;title&gt;entity&lt;/title&gt; &lt;title&gt;and&lt;/title&gt; &lt;title&gt;relation&lt;/title&gt; &lt;title&gt;extraction.&lt;/title&gt; &lt;booktitle&gt;In&lt;/booktitle&gt; &lt;booktitle&gt;ACL&lt;/booktitle&gt; &lt;booktitle&gt;workshop&lt;/booktitle&gt; &lt;booktitle&gt;(SemEval).&lt;/booktitle&gt;&#39;, &#39;tokens&#39;: [&#39;Waleed&#39;, &#39;Ammar,&#39;, &#39;Matthew&#39;, &#39;E.&#39;, &#39;Peters,&#39;, &#39;Chandra&#39;, &#39;Bhagavat-&#39;, &#39;ula,&#39;, &#39;and&#39;, &#39;Russell&#39;, &#39;Power.&#39;, &#39;2017.&#39;, &#39;The&#39;, &#39;ai2&#39;, &#39;system&#39;, &#39;at&#39;, &#39;semeval-2017&#39;, &#39;task&#39;, &#39;10&#39;, &#39;(scienceie):&#39;, &#39;semi-supervised&#39;, &#39;end-to-end&#39;, &#39;entity&#39;, &#39;and&#39;, &#39;relation&#39;, &#39;extraction.&#39;, &#39;In&#39;, &#39;ACL&#39;, &#39;workshop&#39;, &#39;(SemEval).&#39;], &#39;tags&#39;: [&#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;date&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;]},</span>
+<span class="go">{&#39;tagged_text&#39;: &#39;&lt;author&gt;Isabelle&lt;/author&gt; &lt;author&gt;Augenstein,&lt;/author&gt; &lt;author&gt;Mrinal&lt;/author&gt; &lt;author&gt;Das,&lt;/author&gt; &lt;author&gt;Sebastian&lt;/author&gt; &lt;author&gt;Riedel,&lt;/author&gt; &lt;author&gt;Lakshmi&lt;/author&gt; &lt;author&gt;Vikraman,&lt;/author&gt; &lt;author&gt;and&lt;/author&gt; &lt;author&gt;Andrew&lt;/author&gt; &lt;author&gt;D.&lt;/author&gt; &lt;author&gt;McCallum.&lt;/author&gt; &lt;date&gt;2017.&lt;/date&gt; &lt;title&gt;Semeval&lt;/title&gt; &lt;title&gt;2017&lt;/title&gt; &lt;title&gt;task&lt;/title&gt; &lt;title&gt;10&lt;/title&gt; &lt;title&gt;(scienceie):&lt;/title&gt; &lt;title&gt;Extracting&lt;/title&gt; &lt;title&gt;keyphrases&lt;/title&gt; &lt;title&gt;and&lt;/title&gt; &lt;title&gt;relations&lt;/title&gt; &lt;title&gt;from&lt;/title&gt; &lt;title&gt;scientific&lt;/title&gt; &lt;title&gt;publications.&lt;/title&gt; &lt;booktitle&gt;In&lt;/booktitle&gt; &lt;booktitle&gt;ACL&lt;/booktitle&gt; &lt;booktitle&gt;workshop&lt;/booktitle&gt; &lt;booktitle&gt;(SemEval).&lt;/booktitle&gt;&#39;, &#39;tokens&#39;: [&#39;Isabelle&#39;, &#39;Augenstein,&#39;, &#39;Mrinal&#39;, &#39;Das,&#39;, &#39;Sebastian&#39;, &#39;Riedel,&#39;, &#39;Lakshmi&#39;, &#39;Vikraman,&#39;, &#39;and&#39;, &#39;Andrew&#39;, &#39;D.&#39;, &#39;McCallum.&#39;, &#39;2017.&#39;, &#39;Semeval&#39;, &#39;2017&#39;, &#39;task&#39;, &#39;10&#39;, &#39;(scienceie):&#39;, &#39;Extracting&#39;, &#39;keyphrases&#39;, &#39;and&#39;, &#39;relations&#39;, &#39;from&#39;, &#39;scientific&#39;, &#39;publications.&#39;, &#39;In&#39;, &#39;ACL&#39;, &#39;workshop&#39;, &#39;(SemEval).&#39;], &#39;tags&#39;: [&#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;date&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;date&#39;]}]</span>
+</pre></div>
+</div>
+<p>Any additional parameters for the specific task can also be included in <code class="docutils literal notranslate"><span class="pre">predict(...)</span></code>.
+For example, the <code class="docutils literal notranslate"><span class="pre">reference</span> <span class="pre">string</span> <span class="pre">parsing</span></code> task has a <code class="docutils literal notranslate"><span class="pre">dehyphen</span></code> parameter.
+If you want to remove hyphens in the raw text, set the <code class="docutils literal notranslate"><span class="pre">dehyphen</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;Waleed Ammar, Matthew E. Peters, Chandra Bhagavat- ula, and Russell Power. 2017. The ai2 system at semeval-2017 task 10 (scienceie): semi-supervised end-to-end entity and relation extraction. In ACL workshop (SemEval).&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;str&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dehyphen</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="choose-a-model-and-tokenizer">
+<h4>Choose a model and tokenizer<a class="headerlink" href="#choose-a-model-and-tokenizer" title="Permalink to this heading"></a></h4>
+<p>You can choose a model you’d like to use for your task.
+All provided models are shown in <a class="reference internal" href="Models.html"><span class="doc">Models</span></a>.</p>
+<p>For example, create a pipeline to summarize a document and specify a model and tokenizer:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">SciAssist</span> <span class="kn">import</span> <span class="n">SingleSummarization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;facebook/bart-large-cnn&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">ReferenceStringParsing</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;bart-cnn-on-mup&quot;</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="the-task-specific-pipelines">
+<h3>The task-specific pipelines<a class="headerlink" href="#the-task-specific-pipelines" title="Permalink to this heading"></a></h3>
+<div class="section" id="reference-string-parsing">
+<h4>Reference string parsing<a class="headerlink" href="#reference-string-parsing" title="Permalink to this heading"></a></h4>
+<span class="target" id="referencestringparsing"></span><dl class="py class">
+<dt class="sig sig-object py" id="SciAssist.ReferenceStringParsing">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SciAssist.</span></span><span class="sig-name descname"><span class="pre">ReferenceStringParsing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'allenai/scibert_scivocab_uncased'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/pipelines/reference_string_parsing.html#ReferenceStringParsing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.ReferenceStringParsing" title="Permalink to this definition"></a></dt>
+<dd><p>The pipeline for reference string parsing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<cite>str</cite>, <em>optional</em>) – A string, the <em>model name</em> of a pretrained model provided for this task.</p></li>
+<li><p><strong>device</strong> (<cite>str</cite>, <em>optional</em>) – A string, <cite>cpu</cite> or <cite>gpu</cite>.</p></li>
+<li><p><strong>cache_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory in which a downloaded pretrained model should be
+cached if the standard cache should not be used.</p></li>
+<li><p><strong>output_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory in which the predicted results files should be stored.</p></li>
+<li><p><strong>temp_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory which holds temporary files such as <cite>.tei.xml</cite>.</p></li>
+<li><p><strong>tokenizer</strong> (PreTrainedTokenizer, <em>optional</em>) – A specific tokenizer.</p></li>
+<li><p><strong>checkpoint</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – <p>A checkpoint for the tokenizer. You can also specify the <cite>checkpoint</cite> while
+using the default tokenizer.
+Can be either:</p>
+<blockquote>
+<div><ul>
+<li><p>A string, the <em>model id</em> of a predefined tokenizer hosted inside a model repo on huggingface.co.
+Valid model ids can be located at the root-level, like <cite>bert-base-uncased</cite>, or namespaced under a
+user or organization name, like <cite>allenai/scibert_scivocab_uncased</cite>.</p></li>
+<li><p>A path to a <em>directory</em> containing vocabulary files required by the tokenizer, for instance saved
+using the [<cite>~PreTrainedTokenizer.save_pretrained</cite>] method, e.g., <cite>./my_model_directory/</cite>.</p></li>
+<li><p>A path or url to a single saved vocabulary file if and only if the tokenizer only requires a
+single vocabulary file (like Bert or XLNet), e.g.: <cite>./my_model_directory/vocab.txt</cite>. (Not
+applicable to all derived classes)</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>model_max_length</strong> (<cite>int</cite>, <em>optional</em>) – The max sequence length the model accepts.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="SciAssist.ReferenceStringParsing.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dehyphen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/pipelines/reference_string_parsing.html#ReferenceStringParsing.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.ReferenceStringParsing.predict" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<cite>str</cite> or <cite>List[str]</cite> or <cite>os.PathLike</cite>) – <p>Can be either:</p>
+<blockquote>
+<div><ul>
+<li><p>A string, the reference string to be parsed.</p></li>
+<li><p>A list of strings to be parsed.</p></li>
+<li><p>A path to a <em>.txt</em> file to be parsed. Each line of the source file contains a
+reference string.</p></li>
+<li><p>A path to a <em>.pdf</em> file to be parsed, a raw scientific document without processing.
+The pipeline will automatically extract the reference strings from the pdf.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>type</strong> (<cite>str</cite>, default to <cite>pdf</cite>) – <p>The type of input, can be either:</p>
+<blockquote>
+<div><ul>
+<li><p><cite>str</cite> or <cite>string</cite>.</p></li>
+<li><p><cite>text`or `txt</cite> for a .txt file.</p></li>
+<li><p><cite>pdf</cite> for a pdf file. This is the default value.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>dehyphen</strong> (<cite>bool</cite>, default to <cite>False</cite>) – Whether to remove hyphens in raw text.</p></li>
+<li><p><strong>output_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory in which the predicted results files should be stored.
+If not provided, it will use the <cite>output_dir</cite> set for the pipeline.</p></li>
+<li><p><strong>temp_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory which holds temporary files such as <cite>.tei.xml</cite>.
+If not provided, it will use the <cite>temp_dir</cite> set for the pipeline.</p></li>
+<li><p><strong>save_results</strong> (<cite>bool</cite>, default to <cite>True</cite>) – Whether to save the tagged labels in a <em>.txt</em> file.
+<strong>Note</strong>: This is invalid when <cite>type</cite> is set to <cite>str</cite> or <cite>string</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[{“tagged_text”: tagged_text, “tokens”: tokens_list ,”tags”: tags_list } , … ]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>List[Dict]</cite></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">SciAssist</span> <span class="kn">import</span> <span class="n">ReferenceStringParsing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">ReferenceStringParsing</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;Waleed Ammar, Matthew E. Peters, Chandra Bhagavat- ula, and Russell Power. 2017. The ai2 system at semeval-2017 task 10 (scienceie): semi-supervised end-to-end entity and relation extraction. In ACL workshop (SemEval).&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;str&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">[{&#39;tagged_text&#39;: &#39;&lt;author&gt;Waleed&lt;/author&gt; &lt;author&gt;Ammar,&lt;/author&gt; &lt;author&gt;Matthew&lt;/author&gt; &lt;author&gt;E.&lt;/author&gt; &lt;author&gt;Peters,&lt;/author&gt; &lt;author&gt;Chandra&lt;/author&gt; &lt;author&gt;Bhagavat-&lt;/author&gt; &lt;author&gt;ula,&lt;/author&gt; &lt;author&gt;and&lt;/author&gt; &lt;author&gt;Russell&lt;/author&gt; &lt;author&gt;Power.&lt;/author&gt; &lt;date&gt;2017.&lt;/date&gt; &lt;title&gt;The&lt;/title&gt; &lt;title&gt;ai2&lt;/title&gt; &lt;title&gt;system&lt;/title&gt; &lt;title&gt;at&lt;/title&gt; &lt;title&gt;semeval-2017&lt;/title&gt; &lt;title&gt;task&lt;/title&gt; &lt;title&gt;10&lt;/title&gt; &lt;title&gt;(scienceie):&lt;/title&gt; &lt;title&gt;semi-supervised&lt;/title&gt; &lt;title&gt;end-to-end&lt;/title&gt; &lt;title&gt;entity&lt;/title&gt; &lt;title&gt;and&lt;/title&gt; &lt;title&gt;relation&lt;/title&gt; &lt;title&gt;extraction.&lt;/title&gt; &lt;booktitle&gt;In&lt;/booktitle&gt; &lt;booktitle&gt;ACL&lt;/booktitle&gt; &lt;booktitle&gt;workshop&lt;/booktitle&gt; &lt;booktitle&gt;(SemEval).&lt;/booktitle&gt;&#39;,</span>
+<span class="go">&#39;tokens&#39;: [&#39;Waleed&#39;, &#39;Ammar,&#39;, &#39;Matthew&#39;, &#39;E.&#39;, &#39;Peters,&#39;, &#39;Chandra&#39;, &#39;Bhagavat-&#39;, &#39;ula,&#39;, &#39;and&#39;, &#39;Russell&#39;, &#39;Power.&#39;, &#39;2017.&#39;, &#39;The&#39;, &#39;ai2&#39;, &#39;system&#39;, &#39;at&#39;, &#39;semeval-2017&#39;, &#39;task&#39;, &#39;10&#39;, &#39;(scienceie):&#39;, &#39;semi-supervised&#39;, &#39;end-to-end&#39;, &#39;entity&#39;, &#39;and&#39;, &#39;relation&#39;, &#39;extraction.&#39;, &#39;In&#39;, &#39;ACL&#39;, &#39;workshop&#39;, &#39;(SemEval).&#39;],</span>
+<span class="go">&#39;tags&#39;: [&#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;date&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;]}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="single-document-summarization">
+<h4>Single document summarization<a class="headerlink" href="#single-document-summarization" title="Permalink to this heading"></a></h4>
+<span class="target" id="singlesummarization"></span><dl class="py class">
+<dt class="sig sig-object py" id="SciAssist.SingleSummarization">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SciAssist.</span></span><span class="sig-name descname"><span class="pre">SingleSummarization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'facebook/bart-large-cnn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_source_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_target_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/pipelines/summarization.html#SingleSummarization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.SingleSummarization" title="Permalink to this definition"></a></dt>
+<dd><p>The pipeline for single document summarization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<cite>str</cite>, <em>optional</em>) – A string, the <em>model name</em> of a pretrained model provided for this task.</p></li>
+<li><p><strong>device</strong> (<cite>str</cite>, <em>optional</em>) – A string, <cite>cpu</cite> or <cite>gpu</cite>.</p></li>
+<li><p><strong>cache_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory in which a downloaded pretrained model should be
+cached if the standard cache should not be used.</p></li>
+<li><p><strong>output_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory in which the predicted results files should be stored.</p></li>
+<li><p><strong>temp_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory which holds temporary files such as <cite>.tei.xml</cite>.</p></li>
+<li><p><strong>tokenizer</strong> (PreTrainedTokenizer, <em>optional</em>) – A specific tokenizer.</p></li>
+<li><p><strong>checkpoint</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – <p>A checkpoint for the tokenizer. You can also specify the <cite>checkpoint</cite> while
+using the default tokenizer.
+Can be either:</p>
+<blockquote>
+<div><ul>
+<li><p>A string, the <em>model id</em> of a predefined tokenizer hosted inside a model repo on huggingface.co.
+Valid model ids can be located at the root-level, like <cite>bert-base-uncased</cite>, or namespaced under a
+user or organization name, like <cite>facebook/bart-large-cnn</cite>.</p></li>
+<li><p>A path to a <em>directory</em> containing vocabulary files required by the tokenizer, for instance saved
+using the [<cite>~PreTrainedTokenizer.save_pretrained</cite>] method, e.g., <cite>./my_model_directory/</cite>.</p></li>
+<li><p>A path or url to a single saved vocabulary file if and only if the tokenizer only requires a
+single vocabulary file (like Bert or XLNet), e.g.: <cite>./my_model_directory/vocab.txt</cite>. (Not
+applicable to all derived classes)</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>model_max_length</strong> (<cite>int</cite>, <em>optional</em>) – The max sequence length the model accepts.</p></li>
+<li><p><strong>max_source_length</strong> (<cite>int</cite>, <em>optional</em>) – The max length of the input text.</p></li>
+<li><p><strong>max_target_length</strong> (<cite>int</cite>, <em>optional</em>) – The max length of the generated summary.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="SciAssist.SingleSummarization.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_beams</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_return_sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/pipelines/summarization.html#SingleSummarization.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.SingleSummarization.predict" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<cite>str</cite> or <cite>List[str]</cite> or <cite>os.PathLike</cite>) – </p></li>
+<li><p><strong>either</strong> (<em>Can be</em>) – <ul>
+<li><p>A string, the reference string to be parsed.</p></li>
+<li><p>A list of strings to be parsed.</p></li>
+<li><p>A path to a <em>.txt</em> file to be summarized.</p></li>
+<li><p>A path to a <em>.pdf</em> file to be summarized, a raw scientific document without processing.
+The pipeline will automatically extract the body text from the pdf.</p></li>
+</ul>
+</p></li>
+<li><p><strong>type</strong> (<cite>str</cite>, default to <cite>pdf</cite>) – <p>The type of input, can be either:</p>
+<blockquote>
+<div><ul>
+<li><p><cite>str</cite> or <cite>string</cite>.</p></li>
+<li><p><cite>text`or `txt</cite> for a .txt file.</p></li>
+<li><p><cite>pdf</cite> for a pdf file. This is the default value.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>output_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory in which the predicted results files should be stored.
+If not provided, it will use the <cite>output_dir</cite> set for the pipeline.</p></li>
+<li><p><strong>temp_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory which holds temporary files such as <cite>.tei.xml</cite>.
+If not provided, it will use the <cite>temp_dir</cite> set for the pipeline.</p></li>
+<li><p><strong>num_beams</strong> (<cite>int</cite>, <em>optional</em>) – Number of beams for beam search. 1 means no beam search.
+<cite>num_beams</cite> should be divisible by <cite>num_return_sequences</cite> for group beam search.</p></li>
+<li><p><strong>num_return_sequences</strong> (<cite>int</cite>) – The number of independently computed returned sequences for each element in the batch.</p></li>
+<li><p><strong>save_results</strong> (<cite>bool</cite>, default to <cite>True</cite>) – Whether to save the tagged labels in a <em>.txt</em> file.
+<strong>Note</strong>: This is invalid when <cite>type</cite> is set to <cite>str</cite> or <cite>string</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{ “summary”: [summary1, summary2, …], “raw_text”: raw_text }</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>Dict</cite></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">SciAssist</span> <span class="kn">import</span> <span class="n">SingleSummarization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">SingleSummarization</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s1">&#39;N18-3011.pdf&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="n">num_beams</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">num_return_sequences</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">]</span>
+<span class="go">[&#39;The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction. &#39;,</span>
+<span class="go">&#39;The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction.  &#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Models.html" class="btn btn-neutral float-right" title="Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, WING-NUS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
