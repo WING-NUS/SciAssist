@@ -24,7 +24,7 @@ class MupDataModule(LightningDataModule):
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
-        self.data_utils = data_utils
+        self.data_utils = self.hparams.data_utils
         self.data_collator = self.data_utils.collator()
 
         self.data_train: Optional[Dataset] = None
@@ -50,10 +50,10 @@ class MupDataModule(LightningDataModule):
                 remove_columns=processed_datasets["train"].column_names,
                 load_from_cache_file=True
             )
-            self.data_train = tokenized_datasets["train"].select(range(10))
-            self.data_val = tokenized_datasets["validation"].select(range(10))
+            self.data_train = tokenized_datasets["train"]
+            self.data_val = tokenized_datasets["validation"]
             # If labels are not provided, delete the column "labels"
-            self.data_test = tokenized_datasets["test"].remove_columns("labels").select(range(10))
+            self.data_test = tokenized_datasets["test"].remove_columns("labels")
 
     def train_dataloader(self):
         return DataLoader(

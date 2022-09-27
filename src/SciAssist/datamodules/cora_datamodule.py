@@ -22,7 +22,7 @@ class CoraDataModule(LightningDataModule):
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
-        self.data_utils = data_utils
+        self.data_utils = self.hparams.data_utils
         self.data_collator = self.data_utils.collator()
 
         self.data_train: Optional[Dataset] = None
