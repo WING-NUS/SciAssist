@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SciAssist.pipelines.reference_string_parsing &mdash; SciAssist 0.0.4 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> SciAssist
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution.html">Contribute</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SciAssist</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>SciAssist.pipelines.reference_string_parsing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for SciAssist.pipelines.reference_string_parsing</h1><div class="highlight"><pre>
+<span></span><span class="c1"># main developer: Yixi Ding &lt;dingyixi@hotmail.com&gt;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">PreTrainedTokenizer</span>
+<span class="kn">from</span> <span class="nn">SciAssist</span> <span class="kn">import</span> <span class="n">BASE_OUTPUT_DIR</span><span class="p">,</span> <span class="n">BASE_TEMP_DIR</span><span class="p">,</span> <span class="n">BASE_CACHE_DIR</span>
+<span class="kn">from</span> <span class="nn">SciAssist.datamodules.components.cora_label</span> <span class="kn">import</span> <span class="n">LABEL_NAMES</span>
+<span class="kn">from</span> <span class="nn">SciAssist.datamodules.components.cora_label</span> <span class="kn">import</span> <span class="n">label2id</span>
+<span class="kn">from</span> <span class="nn">SciAssist.pipelines.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">SciAssist.utils.pdf2text</span> <span class="kn">import</span> <span class="n">process_pdf_file</span><span class="p">,</span> <span class="n">get_reference</span>
+
+
+<div class="viewcode-block" id="ReferenceStringParsing"><a class="viewcode-back" href="../../../Usage.html#SciAssist.ReferenceStringParsing">[docs]</a><span class="k">class</span> <span class="nc">ReferenceStringParsing</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The pipeline for reference string parsing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_name (`str`, *optional*):</span>
+<span class="sd">            A string, the *model name* of a pretrained model provided for this task.</span>
+<span class="sd">        device (`str`, *optional*):</span>
+<span class="sd">            A string, `cpu` or `gpu`.</span>
+<span class="sd">        cache_dir (`str` or `os.PathLike`, *optional*):</span>
+<span class="sd">            Path to a directory in which a downloaded pretrained model should be</span>
+<span class="sd">            cached if the standard cache should not be used.</span>
+<span class="sd">        output_dir (`str` or `os.PathLike`, *optional*):</span>
+<span class="sd">            Path to a directory in which the predicted results files should be stored.</span>
+<span class="sd">        temp_dir (`str` or `os.PathLike`, *optional*):</span>
+<span class="sd">            Path to a directory which holds temporary files such as `.tei.xml`.</span>
+<span class="sd">        tokenizer (PreTrainedTokenizer, *optional*):</span>
+<span class="sd">            A specific tokenizer.</span>
+<span class="sd">        checkpoint (`str` or `os.PathLike`, *optional*):</span>
+<span class="sd">            A checkpoint for the tokenizer. You can also specify the `checkpoint` while</span>
+<span class="sd">            using the default tokenizer.</span>
+<span class="sd">            Can be either:</span>
+
+<span class="sd">                - A string, the *model id* of a predefined tokenizer hosted inside a model repo on huggingface.co.</span>
+<span class="sd">                  Valid model ids can be located at the root-level, like `bert-base-uncased`, or namespaced under a</span>
+<span class="sd">                  user or organization name, like `allenai/scibert_scivocab_uncased`.</span>
+<span class="sd">                - A path to a *directory* containing vocabulary files required by the tokenizer, for instance saved</span>
+<span class="sd">                  using the [`~PreTrainedTokenizer.save_pretrained`] method, e.g., `./my_model_directory/`.</span>
+<span class="sd">                - A path or url to a single saved vocabulary file if and only if the tokenizer only requires a</span>
+<span class="sd">                  single vocabulary file (like Bert or XLNet), e.g.: `./my_model_directory/vocab.txt`. (Not</span>
+<span class="sd">                  applicable to all derived classes)</span>
+
+<span class="sd">        model_max_length (`int`, *optional*): The max sequence length the model accepts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
+            <span class="n">cache_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">output_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">temp_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">tokenizer</span><span class="p">:</span> <span class="n">PreTrainedTokenizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;allenai/scibert_scivocab_uncased&quot;</span><span class="p">,</span>
+            <span class="n">model_max_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;reference-string-parsing&quot;</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+                         <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span><span class="p">(</span>
+            <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+            <span class="n">checkpoint</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span>
+            <span class="n">model_max_length</span><span class="o">=</span><span class="n">model_max_length</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="ReferenceStringParsing.predict"><a class="viewcode-back" href="../../../Usage.html#SciAssist.ReferenceStringParsing.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="n">dehyphen</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">temp_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">save_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input (`str` or `List[str]` or `os.PathLike`):</span>
+<span class="sd">                Can be either:</span>
+
+<span class="sd">                    - A string, the reference string to be parsed.</span>
+<span class="sd">                    - A list of strings to be parsed.</span>
+<span class="sd">                    - A path to a *.txt* file to be parsed. Each line of the source file contains a</span>
+<span class="sd">                      reference string.</span>
+<span class="sd">                    - A path to a *.pdf* file to be parsed, a raw scientific document without processing.</span>
+<span class="sd">                      The pipeline will automatically extract the reference strings from the pdf.</span>
+
+<span class="sd">            type (`str`, default to `pdf`):</span>
+<span class="sd">                The type of input, can be either:</span>
+
+<span class="sd">                    - `str` or `string`.</span>
+<span class="sd">                    - `text`or `txt` for a .txt file.</span>
+<span class="sd">                    - `pdf` for a pdf file. This is the default value.</span>
+
+<span class="sd">            dehyphen (`bool`, default to `False`):</span>
+<span class="sd">                Whether to remove hyphens in raw text.</span>
+<span class="sd">            output_dir (`str` or `os.PathLike`, *optional*):</span>
+<span class="sd">                Path to a directory in which the predicted results files should be stored.</span>
+<span class="sd">                If not provided, it will use the `output_dir` set for the pipeline.</span>
+<span class="sd">            temp_dir (`str` or `os.PathLike`, *optional*):</span>
+<span class="sd">                Path to a directory which holds temporary files such as `.tei.xml`.</span>
+<span class="sd">                If not provided, it will use the `temp_dir` set for the pipeline.</span>
+<span class="sd">            save_results (`bool`, default to `True`):</span>
+<span class="sd">                Whether to save the tagged labels in a *.txt* file.</span>
+<span class="sd">                **Note**: This is invalid when `type` is set to `str` or `string`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `List[Dict]`: [{&quot;tagged_text&quot;: tagged_text, &quot;tokens&quot;: tokens_list ,&quot;tags&quot;: tags_list } , ... ]</span>
+
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; from SciAssist import ReferenceStringParsing</span>
+<span class="sd">            &gt;&gt;&gt; pipeline = ReferenceStringParsing()</span>
+<span class="sd">            &gt;&gt;&gt; pipeline.predict(</span>
+<span class="sd">            ...     &quot;Waleed Ammar, Matthew E. Peters, Chandra Bhagavat- ula, and Russell Power. 2017. The ai2 system at semeval-2017 task 10 (scienceie): semi-supervised end-to-end entity and relation extraction. In ACL workshop (SemEval).&quot;,</span>
+<span class="sd">            ...     type=&quot;str&quot;</span>
+<span class="sd">            ... )</span>
+<span class="sd">            [{&#39;tagged_text&#39;: &#39;&lt;author&gt;Waleed&lt;/author&gt; &lt;author&gt;Ammar,&lt;/author&gt; &lt;author&gt;Matthew&lt;/author&gt; &lt;author&gt;E.&lt;/author&gt; &lt;author&gt;Peters,&lt;/author&gt; &lt;author&gt;Chandra&lt;/author&gt; &lt;author&gt;Bhagavat-&lt;/author&gt; &lt;author&gt;ula,&lt;/author&gt; &lt;author&gt;and&lt;/author&gt; &lt;author&gt;Russell&lt;/author&gt; &lt;author&gt;Power.&lt;/author&gt; &lt;date&gt;2017.&lt;/date&gt; &lt;title&gt;The&lt;/title&gt; &lt;title&gt;ai2&lt;/title&gt; &lt;title&gt;system&lt;/title&gt; &lt;title&gt;at&lt;/title&gt; &lt;title&gt;semeval-2017&lt;/title&gt; &lt;title&gt;task&lt;/title&gt; &lt;title&gt;10&lt;/title&gt; &lt;title&gt;(scienceie):&lt;/title&gt; &lt;title&gt;semi-supervised&lt;/title&gt; &lt;title&gt;end-to-end&lt;/title&gt; &lt;title&gt;entity&lt;/title&gt; &lt;title&gt;and&lt;/title&gt; &lt;title&gt;relation&lt;/title&gt; &lt;title&gt;extraction.&lt;/title&gt; &lt;booktitle&gt;In&lt;/booktitle&gt; &lt;booktitle&gt;ACL&lt;/booktitle&gt; &lt;booktitle&gt;workshop&lt;/booktitle&gt; &lt;booktitle&gt;(SemEval).&lt;/booktitle&gt;&#39;,</span>
+<span class="sd">            &#39;tokens&#39;: [&#39;Waleed&#39;, &#39;Ammar,&#39;, &#39;Matthew&#39;, &#39;E.&#39;, &#39;Peters,&#39;, &#39;Chandra&#39;, &#39;Bhagavat-&#39;, &#39;ula,&#39;, &#39;and&#39;, &#39;Russell&#39;, &#39;Power.&#39;, &#39;2017.&#39;, &#39;The&#39;, &#39;ai2&#39;, &#39;system&#39;, &#39;at&#39;, &#39;semeval-2017&#39;, &#39;task&#39;, &#39;10&#39;, &#39;(scienceie):&#39;, &#39;semi-supervised&#39;, &#39;end-to-end&#39;, &#39;entity&#39;, &#39;and&#39;, &#39;relation&#39;, &#39;extraction.&#39;, &#39;In&#39;, &#39;ACL&#39;, &#39;workshop&#39;, &#39;(SemEval).&#39;],</span>
+<span class="sd">            &#39;tags&#39;: [&#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;date&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;]}]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">output_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+        <span class="k">if</span> <span class="n">temp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">temp_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span>
+
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">]:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_for_string</span><span class="p">(</span><span class="n">example</span><span class="o">=</span><span class="nb">input</span><span class="p">,</span> <span class="n">dehyphen</span><span class="o">=</span><span class="n">dehyphen</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;txt&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">]:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_for_text</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="nb">input</span><span class="p">,</span> <span class="n">dehyphen</span><span class="o">=</span><span class="n">dehyphen</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;pdf&quot;</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_for_pdf</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="nb">input</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">dehyphen</span><span class="o">=</span><span class="n">dehyphen</span><span class="p">)</span>
+        <span class="c1"># Save predicted results as a text file</span>
+        <span class="k">if</span> <span class="n">save_results</span> <span class="ow">and</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">]:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s2">_rsp.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;tagged_text&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span></div>
+
+    <span class="k">def</span> <span class="nf">_dehyphen_for_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;- &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">_to_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;scibert-on-cora&quot;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;input_ids&quot;</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;input_ids&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                <span class="s2">&quot;token_type_ids&quot;</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;token_type_ids&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                <span class="s2">&quot;attention_mask&quot;</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;attention_mask&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                <span class="s2">&quot;token_mapping&quot;</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;token_mapping&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">examples</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a list of tokens obtained from reference strings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            examples (`List[List[str]]`):</span>
+<span class="sd">                The inputs for inference, where each item is a list of tokens.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `List[Dict]`:</span>
+<span class="sd">                Tagged strings, origin tokens and labels predicted by the model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Prepare the dataset</span>
+        <span class="n">dict_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;tokens&quot;</span><span class="p">:</span> <span class="n">examples</span><span class="p">}</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dict_data</span><span class="p">)</span>
+
+        <span class="n">dataloader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span><span class="o">.</span><span class="n">get_dataloader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">label2id</span><span class="o">=</span><span class="n">label2id</span><span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">true_preds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+            <span class="c1"># Predict the labels</span>
+
+            <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_device</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
+            <span class="n">preds</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># Convert ids to labels and</span>
+            <span class="c1"># merge the labels according to origin tokens.</span>
+            <span class="n">preds</span> <span class="o">=</span> <span class="p">[[</span><span class="n">LABEL_NAMES</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pred</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">LABEL_NAMES</span><span class="p">)]</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">preds</span><span class="p">]</span>
+            <span class="n">true_preds</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
+
+        <span class="n">tokens</span> <span class="o">=</span> <span class="n">examples</span>
+
+        <span class="c1"># Generate the tagged strings.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)):</span>
+            <span class="n">tagged_words</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">token</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">true_preds</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                <span class="n">tagged_word</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&lt;/</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+                <span class="n">tagged_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tagged_word</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tagged_words</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;tagged_text&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
+                    <span class="s2">&quot;tokens&quot;</span><span class="p">:</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="n">true_preds</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="k">def</span> <span class="nf">_predict_for_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">example</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">dehyphen</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a reference string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            example (`Union[str, List[str]]`): The string to parse.</span>
+<span class="sd">            dehyphen (`Optional[bool]`): Whether to remove &#39;-&#39;, default to `False`.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">           `List[Dict]`:</span>
+<span class="sd">                Tagged string, origin tokens and labels predicted by the model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">example</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">examples</span> <span class="o">=</span> <span class="n">example</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">examples</span> <span class="o">=</span> <span class="p">[</span><span class="n">example</span><span class="p">]</span>
+
+        <span class="c1"># remove &#39;-&#39; in text</span>
+        <span class="k">if</span> <span class="n">dehyphen</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">examples</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dehyphen_for_str</span><span class="p">(</span><span class="n">example</span><span class="p">)</span> <span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">]</span>
+
+        <span class="n">splitted_examples</span> <span class="o">=</span> <span class="p">[</span><span class="n">example</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">splitted_examples</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="k">def</span> <span class="nf">_predict_for_text</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">dehyphen</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parse reference strings from a text and save the result as a text file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (`str`): The path to the text file to predict.</span>
+<span class="sd">            dehyphen (`Optional[bool]`): Whether to remove &#39;-&#39;, default to `False`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `List[Dict]`:</span>
+<span class="sd">                Tagged strings, origin tokens and labels predicted by the model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">examples</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+        <span class="c1"># remove &#39;-&#39; in text</span>
+        <span class="k">if</span> <span class="n">dehyphen</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">examples</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dehyphen_for_str</span><span class="p">(</span><span class="n">example</span><span class="p">)</span> <span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">]</span>
+
+        <span class="n">splitted_examples</span> <span class="o">=</span> <span class="p">[</span><span class="n">example</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">splitted_examples</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="k">def</span> <span class="nf">_predict_for_pdf</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">output_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">BASE_OUTPUT_DIR</span><span class="p">,</span>
+            <span class="n">temp_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">BASE_TEMP_DIR</span><span class="p">,</span>
+            <span class="n">dehyphen</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse reference strings from a PDF and save the result as a text file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (`str`): The path to the pdf file to parse.</span>
+<span class="sd">            output_dir (`Optional[str]`): The directory to save the result file, default to `result/`.</span>
+<span class="sd">            temp_dir (`Optional[str]`): The diretorcy to save intermediate file, default to `temp/`.</span>
+<span class="sd">            dehyphen (`Optional[bool]`): Whether to remove &#39;-&#39;, default to `False`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           `List[Dict]`:</span>
+<span class="sd">                Tagged strings, origin tokens and labels predicted by the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Convert PDF to JSON with doc2json.</span>
+        <span class="n">json_file</span> <span class="o">=</span> <span class="n">process_pdf_file</span><span class="p">(</span><span class="n">input_file</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)</span>
+        <span class="c1"># Extract reference strings from JSON and save them in TEXT format.</span>
+        <span class="n">text_file</span> <span class="o">=</span> <span class="n">get_reference</span><span class="p">(</span><span class="n">json_file</span><span class="o">=</span><span class="n">json_file</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_for_text</span><span class="p">(</span><span class="n">text_file</span><span class="p">,</span> <span class="n">dehyphen</span><span class="o">=</span><span class="n">dehyphen</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, WING-NUS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

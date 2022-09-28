@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "SciAssist"
+version = "0.0.11"
+authors = [
+  { name="WING-NUS", email="dingyixi@hotmail.com" },
+]
+maintainers = [
+  { name="Yixi Ding", email="dingyixi@hotmail.com" },
+]
+description = "A toolkit for Scientific Document Processing"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Free for non-commercial use",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "beautifulsoup4~=4.9.0",
+    "chardet~=3.0.4",
+    "datasets~=2.2.2",
+    "hydra-core>=1.1.0",
+    "lxml",
+    "matplotlib~=3.5.1",
+    "nltk~=3.7",
+    "numpy~=1.19.2",
+    "omegaconf~=2.2.2",
+    "PyPDF2~=2.10.7",
+    "python_magic~=0.4.18",
+    "pytorch_lightning>=1.5.10",
+    "requests~=2.21.0",
+    "rich~=12.4.4",
+    "seaborn~=0.11.2",
+    "setuptools>=61.0",
+    "torch>=1.12.0",
+    "torchmetrics>=0.7.0",
+    "transformers~=4.19.2",
+    "wandb~=0.12.19",
+]
+
+
+[project.scripts]
+setup_grobid = "SciAssist.bin:setup_grobid"
+run_grobid = "SciAssist.bin:run_grobid"
+
+[project.urls]
+"Homepage" = "https://github.com/WING-NUS/SciAssist"
+"Bug Tracker" = "https://github.com/WING-NUS/SciAssist/issues"

@@ -1,0 +1,9 @@
+_target_: SciAssist.datamodules.cora_datamodule.CoraDataModule
+
+data_repo: "myvision/cora-dataset-final"
+train_batch_size: 8
+num_workers: 0
+pin_memory: False
+data_cache_dir:  ${paths.data_dir}/cora/
+data_utils:
+  _target_: SciAssist.utils.data_utils.DataUtilsForTokenClassification

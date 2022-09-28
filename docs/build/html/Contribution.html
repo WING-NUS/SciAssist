@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing Guide &mdash; SciAssist 0.0.4 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Models" href="Models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> SciAssist
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Models.html">Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fork-the-sciassist-repository">1. Fork the SciAssist repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-grobid-server-for-pdf-processing">2. Install Grobid Server for pdf processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#train-a-model-on-a-new-task">3. Train a model on a new task</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general-overview">General overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-by-step-recipe-to-train-on-a-new-task">Step-by-step recipe to train on a new task</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-datautils">Create datautils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-your-datamodule">Prepare your datamodule</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-your-model">Prepare your model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-a-trainer-and-start-training">Create a Trainer and start training</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#build-a-pipeline-for-the-new-task">4. Build a pipeline for the new task</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">General overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#step-by-step-recipe-to-add-a-pipeline">Step-by-step recipe to add a pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#add-the-model-configs">Add the model configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-a-task-specific-pipeline-class">Create a task-specific pipeline class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#implement-the-predict-function">Implement the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#make-the-new-pipeline-easy-to-import">Make the new pipeline easy to import</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SciAssist</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Contributing Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Contribution.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="contributing-guide">
+<h1>Contributing Guide<a class="headerlink" href="#contributing-guide" title="Permalink to this heading"></a></h1>
+<div class="section" id="fork-the-sciassist-repository">
+<span id="contribution"></span><h2>1. Fork the SciAssist repository<a class="headerlink" href="#fork-the-sciassist-repository" title="Permalink to this heading"></a></h2>
+<p>First, make a fork of the <a class="reference external" href="https://github.com/WING-NUS/SciAssist">SciAssist</a> repository.
+Clone the forked repository and install the package dependencies in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> into your virtual environment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># clone project</span>
+git clone https://github.com/WING-NUS/SciAssist
+<span class="nb">cd</span> SciAssist
+
+<span class="c1"># [OPTIONAL] create conda environment</span>
+conda create -n myenv <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
+conda activate myenv
+
+<span class="c1"># install pytorch according to instructions</span>
+<span class="c1"># https://pytorch.org/get-started/</span>
+
+<span class="c1"># install requirements</span>
+pip install -r requirements.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-grobid-server-for-pdf-processing">
+<h2>2. Install Grobid Server for pdf processing<a class="headerlink" href="#install-grobid-server-for-pdf-processing" title="Permalink to this heading"></a></h2>
+<p>The current <code class="docutils literal notranslate"><span class="pre">doc2json</span></code> tool uses Grobid to first process each PDF into XML, then extracts paper components from the XML.
+You will need to have Java installed on your machine. Then, you can install
+your own version of Grobid and get it running.
+To setup Grobid conveniently, you can use the CLIs provided by SciAssist.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># setup CLIs</span>
+python setup.py develop
+
+<span class="c1"># setup Grobid</span>
+setup_grobid
+
+<span class="c1"># run Grobid</span>
+run_grobid
+</pre></div>
+</div>
+</div>
+<div class="section" id="train-a-model-on-a-new-task">
+<h2>3. Train a model on a new task<a class="headerlink" href="#train-a-model-on-a-new-task" title="Permalink to this heading"></a></h2>
+<div class="section" id="general-overview">
+<h3>General overview<a class="headerlink" href="#general-overview" title="Permalink to this heading"></a></h3>
+<p>Generally, to train on a new task, you will need to:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Enter <code class="docutils literal notranslate"><span class="pre">src/</span></code> directory.</p></li>
+<li><p>Choose or create a datautils class in <code class="docutils literal notranslate"><span class="pre">src/SciAssist/utils/data_utils.py</span></code>.</p></li>
+<li><p>Prepare a datamodule(LightningDataModule) in <code class="docutils literal notranslate"><span class="pre">src/SciAssist/datamodules</span></code> and create datamodule config in <code class="docutils literal notranslate"><span class="pre">src/SciAssist/configs/datamodule</span></code></p></li>
+<li><p>Prepare a model(LightningModule) in <code class="docutils literal notranslate"><span class="pre">src/SciAssist/models</span></code> and create model config in <code class="docutils literal notranslate"><span class="pre">src/SciAssist/configs/model</span></code></p></li>
+<li><p>Specify the configs and train your model in command line:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python SciAssist/train.py --datamodule<span class="o">=</span>dataconfig --model<span class="o">=</span>modelconfig
+</pre></div>
+</div>
+</div></blockquote>
+<p>You may want more information about <a class="reference external" href="https://hydra.cc/docs/intro/">Hydra</a> to understand the config files better.</p>
+</div>
+<div class="section" id="step-by-step-recipe-to-train-on-a-new-task">
+<h3>Step-by-step recipe to train on a new task<a class="headerlink" href="#step-by-step-recipe-to-train-on-a-new-task" title="Permalink to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">src/</span></code> directory is considered the of SciAssist’s source code, so enter <code class="docutils literal notranslate"><span class="pre">src/</span></code> before the next steps.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> src
+</pre></div>
+</div>
+<div class="section" id="create-datautils">
+<span id="datautils"></span><h4>Create datautils<a class="headerlink" href="#create-datautils" title="Permalink to this heading"></a></h4>
+<p>There should be some customed functions for data processing,
+you will need to create a <code class="docutils literal notranslate"><span class="pre">DataUtils</span></code> class for them for easy reuse in both training and inference.
+For example, this is a datautil for Seq2Seq task:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="SciAssist.utils.data_utils.DataUtilsForSeq2Seq">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SciAssist.utils.data_utils.</span></span><span class="sig-name descname"><span class="pre">DataUtilsForSeq2Seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenizer=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_class=&lt;class</span> <span class="pre">'SciAssist.models.components.bart_summarization.BartForSummarization'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint='facebook/bart-large-cnn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_max_length=1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_source_length=1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_target_length=128</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/utils/data_utils.html#DataUtilsForSeq2Seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.utils.data_utils.DataUtilsForSeq2Seq" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tokenizer</strong> (<cite>PretrainedTokenizer</cite>, default to None) – The tokenizer for tokenization.</p></li>
+<li><p><strong>checkpoint</strong> (<cite>str</cite>) – The checkpoint from which the tokenizer is loaded.</p></li>
+<li><p><strong>model_max_length</strong> (<cite>int</cite>, <em>optional</em>) – The max sequence length the model accepts.</p></li>
+<li><p><strong>max_source_length</strong> (<cite>int</cite>, <em>optional</em>) – The max length of the input text.</p></li>
+<li><p><strong>max_target_length</strong> (<cite>int</cite>, <em>optional</em>) – The max length of the generated summary.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="SciAssist.utils.data_utils.DataUtilsForSeq2Seq.tokenize_and_align_labels">
+<span class="sig-name descname"><span class="pre">tokenize_and_align_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">examples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'summary'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/utils/data_utils.html#DataUtilsForSeq2Seq.tokenize_and_align_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.utils.data_utils.DataUtilsForSeq2Seq.tokenize_and_align_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Process the dataset for model input, for example, do tokenization and prepare label_ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>examples</strong> (<cite>Dataset</cite>) – { “text”: [s1, s2, …], “summary”: [l1, l2, …]}</p></li>
+<li><p><strong>inputs</strong> (<cite>str</cite>) – The name of input column</p></li>
+<li><p><strong>labels</strong> (<cite>str</cite>) – The name of target column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>{“input_ids”: input_ids, “attention_mask”: attention_mask, “labels”: label_ids }</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>Dict</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SciAssist.utils.data_utils.DataUtilsForSeq2Seq.collator">
+<span class="sig-name descname"><span class="pre">collator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/utils/data_utils.html#DataUtilsForSeq2Seq.collator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.utils.data_utils.DataUtilsForSeq2Seq.collator" title="Permalink to this definition"></a></dt>
+<dd><p>The collating function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>A collating function.</p>
+<p>For example, <strong>DataCollatorForSeq2Seq(…)</strong>.</p>
+<p>You can also custom a collating function, but remember that <cite>collator()</cite> needs to return a <strong>function</strong>.</p>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><cite>function</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SciAssist.utils.data_utils.DataUtilsForSeq2Seq.postprocess">
+<span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/utils/data_utils.html#DataUtilsForSeq2Seq.postprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.utils.data_utils.DataUtilsForSeq2Seq.postprocess" title="Permalink to this definition"></a></dt>
+<dd><p>Process model’s outputs and get the final results rather than simple ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>preds</strong> (<em>Tensor</em>) – Prediction labels, the output of the model.</p></li>
+<li><p><strong>labels</strong> (<em>Tensor</em>) – True labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>decoded_preds, decoded_labels</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>(LongTensor, LongTensor)</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SciAssist.utils.data_utils.DataUtilsForSeq2Seq.get_dataloader">
+<span class="sig-name descname"><span class="pre">get_dataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'summary'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/utils/data_utils.html#DataUtilsForSeq2Seq.get_dataloader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.utils.data_utils.DataUtilsForSeq2Seq.get_dataloader" title="Permalink to this definition"></a></dt>
+<dd><p>Generate DataLoader for a dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<cite>Dataset</cite>) – The raw dataset.</p></li>
+<li><p><strong>inputs_column</strong> (<cite>str</cite>) – Column name of the inputs.</p></li>
+<li><p><strong>labels_column</strong> (<cite>str</cite>) – Column name of the labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dataloader for the dataset. Will be used for inference.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>DataLoader</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="prepare-your-datamodule">
+<h4>Prepare your datamodule<a class="headerlink" href="#prepare-your-datamodule" title="Permalink to this heading"></a></h4>
+<p>Basically, you can create a <strong>DataModule</strong> in <code class="docutils literal notranslate"><span class="pre">datamodules/</span></code> to prepare your dataloader.
+For example, we have <code class="docutils literal notranslate"><span class="pre">cora_datamodule.py</span></code> for Cora dataset.
+In <code class="docutils literal notranslate"><span class="pre">datamodules/components</span></code>, you can save some fixed properties such as the label set.</p>
+<p>A <strong>DataModule</strong> standardizes the training, val, test splits, data preparation and transforms.
+A DataModule looks like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningDataModule</span>
+<span class="kn">from</span> <span class="nn">SciAssist.datamodules.components.cora_label</span> <span class="kn">import</span> <span class="n">label2id</span>
+<span class="kn">from</span> <span class="nn">SciAssist.utils.data_utils</span> <span class="kn">import</span> <span class="n">DataUtilsForTokenClassification</span>
+
+<span class="k">class</span> <span class="nc">MyDataModule</span><span class="p">(</span><span class="n">LightningDataModule</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;myvision/cora-dataset-final&quot;</span><span class="p">,</span> <span class="n">data_utils</span><span class="o">=</span><span class="n">DataUtilsForTokenClassification</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="c1"># use parameters by self.hparams.xx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">data_utils</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_train</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># download, split, etc...</span>
+        <span class="c1"># only called on 1 GPU/TPU in distributed</span>
+        <span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">data_repo</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">raw_datasets</span>
+
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="c1"># make assignments here (val/train/test split)</span>
+        <span class="c1"># called on every process in DDP</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_train</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_val</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_test</span><span class="p">:</span>
+            <span class="n">processed_datasets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_data</span><span class="p">()</span>
+            <span class="n">tokenized_datasets</span> <span class="o">=</span> <span class="n">processed_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span><span class="o">.</span><span class="n">tokenize_and_align_labels</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">label2id</span><span class="p">),</span>
+                <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">remove_columns</span><span class="o">=</span><span class="n">processed_datasets</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">column_names</span><span class="p">,</span>
+                <span class="n">load_from_cache_file</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_train</span> <span class="o">=</span> <span class="n">tokenized_datasets</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_val</span> <span class="o">=</span> <span class="n">tokenized_datasets</span><span class="p">[</span><span class="s2">&quot;val&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_test</span> <span class="o">=</span> <span class="n">tokenized_datasets</span><span class="p">[</span><span class="s2">&quot;test&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">train_split</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_split</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">val_split</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_split</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">test_split</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_split</span><span class="p">)</span>
+    <span class="c1">#def teardown(self):</span>
+        <span class="c1"># clean up after fit or test</span>
+        <span class="c1"># called on every process in DDP</span>
+</pre></div>
+</div>
+<p>They are actually hook functions, so you can simply fill in them as you like.</p>
+<p>Then, create a <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> in <code class="docutils literal notranslate"><span class="pre">configs/datamodule</span></code> to instantiate your datamodule.
+A data config file looks like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># The target class of the following configs</span><span class="w"></span>
+<span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SciAssist.datamodules.my_datamodule.MyDataModule</span><span class="w"></span>
+
+<span class="c1"># Pass constructor parameters to the target class</span><span class="w"></span>
+<span class="nt">data_repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;myvision/cora-dataset-final&quot;</span><span class="w"></span>
+<span class="nt">data_utils</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SciAssist.utils.data_utils.DataUtilsForTokenClassification</span><span class="w"></span>
+</pre></div>
+</div>
+<p>For more details about <strong>DataModule</strong>, refer <a class="reference external" href="https://pytorch-lightning.readthedocs.io/en/latest/data/datamodule.html">DataLightningModule</a>.</p>
+</div>
+<div class="section" id="prepare-your-model">
+<h4>Prepare your model<a class="headerlink" href="#prepare-your-model" title="Permalink to this heading"></a></h4>
+<p>All the components of a model should be included in <code class="docutils literal notranslate"><span class="pre">SciAssist/models/components</span></code>, including model structure, tokenizers and so on.</p>
+<p>Next, define the logic of training, validation and test for your model in a <strong>LightningModule</strong>.
+Same as a <strong>LightningDataModule</strong>, a <strong>LightningModule</strong> provides some hook functions to simplify the procedure.
+For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningModule</span>
+<span class="kn">from</span> <span class="nn">torchmetrics.classification.accuracy</span> <span class="kn">import</span> <span class="n">Accuracy</span>
+
+
+<span class="kn">from</span> <span class="nn">SciAssist.datamodules.components.cora_label</span> <span class="kn">import</span> <span class="n">num_labels</span><span class="p">,</span> <span class="n">LABEL_NAMES</span>
+<span class="kn">from</span> <span class="nn">SciAssist.models.components.bert_token_classifier</span> <span class="kn">import</span> <span class="n">BertForTokenClassifier</span>
+<span class="kn">from</span> <span class="nn">SciAssist.utils.data_utils</span> <span class="kn">import</span> <span class="n">DataUtilsForTokenClassification</span>
+
+
+<span class="k">class</span> <span class="nc">LitModel</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">BertForTokenClassifier</span><span class="p">,</span>
+                <span class="n">data_utils</span><span class="p">:</span> <span class="n">DataUtilsForTokenClassification</span><span class="p">,</span>
+                <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2e-5</span><span class="p">):</span>
+
+        <span class="c1"># Define computations here</span>
+        <span class="c1"># You can easily use multiple components in `models/components`</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span> <span class="o">=</span> <span class="n">data_utils</span> <span class="c1"># or self.hparams.data_utils</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span> <span class="c1"># or self.hparams.model</span>
+
+        <span class="c1"># num_classes + 1 to account for the extra class used for padding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_acc</span> <span class="o">=</span> <span class="n">Accuracy</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_labels</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">num_labels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_acc</span> <span class="o">=</span> <span class="n">Accuracy</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_labels</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">num_labels</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="c1"># Use for inference only (separate from training_step)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">loss</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span>
+
+
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="c1"># the complete training loop</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train/loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># the complete validation loop</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="n">true_preds</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">true_labels</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># the complete test loop</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="n">true_preds</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">true_labels</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># define optimizers and LR schedulers</span>
+       <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">lr</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>The <strong>LightningModule</strong> has many convenience methods, and here are the core ones.
+Check <cite>LightningModule &lt;https://pytorch-lightning.readthedocs.io/en/stable/common/lightning_module.html&gt;</cite> for further information.</p>
+<p>Also, create a config file in <code class="docutils literal notranslate"><span class="pre">configs/model</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># The target Class</span><span class="w"></span>
+<span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SciAssist.models.cora_module.CoraLitModule</span><span class="w"></span>
+<span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2e-5</span><span class="w"></span>
+<span class="nt">data_utils</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SciAssist.utils.data_utils.DataUtilsForTokenClassification</span><span class="w"></span>
+
+
+<span class="c1"># Parameters can be nested</span><span class="w"></span>
+<span class="c1"># When instantiating the LitModule, the following model will be automatically constructed.</span><span class="w"></span>
+<span class="nt">model</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SciAssist.models.components.bert_token_classifier.BertForTokenClassifier</span><span class="w"></span>
+<span class="w">    </span><span class="nt">model_checkpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;allenai/scibert_scivocab_uncased&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">output_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">13</span><span class="w"></span>
+<span class="w">    </span><span class="nt">cache_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${paths.root_dir}/.cache/</span><span class="w"></span>
+<span class="w">    </span><span class="nt">save_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${model_name}</span><span class="w"></span>
+<span class="w">    </span><span class="nt">model_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${paths.model_dir}</span><span class="w"></span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-a-trainer-and-start-training">
+<h4>Create a Trainer and start training<a class="headerlink" href="#create-a-trainer-and-start-training" title="Permalink to this heading"></a></h4>
+<div class="section" id="create-a-trainer">
+<h5>Create a trainer<a class="headerlink" href="#create-a-trainer" title="Permalink to this heading"></a></h5>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Actually there have been a perfect <code class="docutils literal notranslate"><span class="pre">train_pipeline.py</span></code> in SciAssist,
+so there’s no need to write a train pipeline yourself.
+After preparing the <strong>LightningDataModule</strong> and <strong>LightningModule</strong>, you can
+train the model with <cite>SciAssist/train.py</cite> as shown above.
+But here’s an introduction to this procedure in case of any unknown problem.
+If you are not interested, skip to the next part <a class="reference internal" href="#train"><span class="std std-ref">Start training</span></a>.</p>
+</div>
+<p>The last step before starting training is to prepare a trainer config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_lightning.Trainer</span><span class="w"></span>
+
+<span class="nt">accelerator</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;gpu&#39;</span><span class="w"></span>
+<span class="nt">devices</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<span class="nt">min_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<span class="nt">max_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
+
+<span class="c1"># ckpt path</span><span class="w"></span>
+<span class="nt">resume_from_checkpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
+</pre></div>
+</div>
+<p>And then you can create a Pytorch lightning Trainer to manage the whole training process:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hydra</span>
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">LightningDataModule</span><span class="p">,</span>
+    <span class="n">LightningModule</span><span class="p">,</span>
+    <span class="n">Trainer</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># To introduce hydra config files</span>
+<span class="nd">@hydra</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">version_base</span><span class="o">=</span><span class="s2">&quot;1.2&quot;</span><span class="p">,</span> <span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;configs/&quot;</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s2">&quot;train.yaml&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">):</span>
+    <span class="c1"># Init datamodule</span>
+    <span class="n">datamodule</span><span class="p">:</span> <span class="n">LightningDataModule</span> <span class="o">=</span> <span class="n">hydra</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">datamodule</span><span class="p">)</span>
+
+    <span class="c1"># Init lightning model</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">LightningModule</span> <span class="o">=</span> <span class="n">hydra</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Init Trainer</span>
+    <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span> <span class="o">=</span> <span class="n">hydra</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">_convert_</span><span class="o">=</span><span class="s2">&quot;partial&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># To train the model</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>More details are provided in <a class="reference external" href="https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#basic-use">Trainer</a> .</p>
+</div>
+<div class="section" id="start-training">
+<span id="train"></span><h5>Start training<a class="headerlink" href="#start-training" title="Permalink to this heading"></a></h5>
+<p>Finally, you can choose your config files and train your model with the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python SciAssist/train.py <span class="nv">trainer</span><span class="o">=</span>gpu <span class="nv">datamodule</span><span class="o">=</span>dataconfig <span class="nv">model</span><span class="o">=</span>modelconfig
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="build-a-pipeline-for-the-new-task">
+<h2>4. Build a pipeline for the new task<a class="headerlink" href="#build-a-pipeline-for-the-new-task" title="Permalink to this heading"></a></h2>
+<div class="section" id="id1">
+<h3>General overview<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<p>As SciAssist aims to serve users, you will need to write a pipeline easy to use.
+The pipelines are stored in <code class="docutils literal notranslate"><span class="pre">SciAssist/pipelines</span></code>. Generally, you need to:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Add the model configs in <code class="docutils literal notranslate"><span class="pre">SciAssist/pipelines/__init__.py</span></code>.</p></li>
+<li><p>Create a task-specific pipeline class inherited from <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> class.</p></li>
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">predict()</span></code> function in the class.</p></li>
+<li><p>Import the pipeline class in <code class="docutils literal notranslate"><span class="pre">SciAssist/__init__.py</span></code>.</p></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="step-by-step-recipe-to-add-a-pipeline">
+<h3>Step-by-step recipe to add a pipeline<a class="headerlink" href="#step-by-step-recipe-to-add-a-pipeline" title="Permalink to this heading"></a></h3>
+<div class="section" id="add-the-model-configs">
+<h4>Add the model configs<a class="headerlink" href="#add-the-model-configs" title="Permalink to this heading"></a></h4>
+<p>After you have a new model, add its corresponding configs to the dict <code class="docutils literal notranslate"><span class="pre">Tasks</span></code> in <code class="docutils literal notranslate"><span class="pre">SciAssist/pipelines/__init__.py</span></code>.</p>
+<ul class="simple">
+<li><p><strong>model</strong>: A ModelClass in <code class="docutils literal notranslate"><span class="pre">models/components</span></code>.</p></li>
+<li><p><strong>model_dict_url</strong>: URL to download the model dict.
+<code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> will load model weights from the <cite>.pt</cite> according to the URL.</p></li>
+<li><p><strong>data_utils</strong>: A DataUtils Class.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TASKS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;new-task&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;new-model&quot;</span><span class="p">:</span>  <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">ModelClass</span><span class="p">,</span>
+            <span class="s2">&quot;model_dict_url&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+            <span class="s2">&quot;data_utils&quot;</span><span class="p">:</span> <span class="n">DataUtilsForNewTask</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">ModelClass</span><span class="p">,</span>
+            <span class="s2">&quot;model_dict_url&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+            <span class="s2">&quot;data_utils&quot;</span><span class="p">:</span> <span class="n">DataUtilsForNewTask</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-a-task-specific-pipeline-class">
+<h4>Create a task-specific pipeline class<a class="headerlink" href="#create-a-task-specific-pipeline-class" title="Permalink to this heading"></a></h4>
+<p>A task-specific pipeline class should be inherited from <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> class,
+which loads a model according to <cite>task_name</cite> and <cite>model_name</cite>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="SciAssist.pipelines.pipeline.Pipeline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SciAssist.pipelines.pipeline.</span></span><span class="sig-name descname"><span class="pre">Pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SciAssist/pipelines/pipeline.html#Pipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#SciAssist.pipelines.pipeline.Pipeline" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task_name</strong> (<cite>str</cite>) – The task name, which is used to load model configs.</p></li>
+<li><p><strong>model_name</strong> (<cite>str</cite>, <em>optional</em>) – A string, the <em>model name</em> of a pretrained model provided for this task.</p></li>
+<li><p><strong>device</strong> (<cite>str</cite>, <em>optional</em>) – A string, <cite>cpu</cite> or <cite>gpu</cite>.</p></li>
+<li><p><strong>cache_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>, default to “~/.cache/sciassist”) – Path to a directory in which a downloaded pretrained model should be
+cached if the standard cache should not be used.</p></li>
+<li><p><strong>output_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>, default to “output/result” from current work directory) – Path to a directory in which the predicted results files should be stored.</p></li>
+<li><p><strong>temp_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>, default to “output/.temp” from current work directory) – Path to a directory which holds temporary files such as <cite>.tei.xml</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>In your new pipeline class, specify a default <cite>model_name</cite> to choose a model and instantiate a <a class="reference internal" href="#datautils"><span class="std std-ref">DataUtils</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">SciAssist.pipelines.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">SciAssist.utils.pdf2text</span> <span class="kn">import</span> <span class="n">process_pdf_file</span><span class="p">,</span> <span class="n">get_reference</span>
+
+<span class="k">class</span> <span class="nc">MyPipeline</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;new-model&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
+            <span class="n">cache_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">output_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">temp_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">tokenizer</span><span class="p">:</span> <span class="n">PreTrainedTokenizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;allenai/scibert_scivocab_uncased&quot;</span><span class="p">,</span>
+            <span class="n">model_max_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;reference-string-parsing&quot;</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+                        <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="n">temp_dir</span><span class="p">)</span>
+
+        <span class="c1"># Instantiate a datautils</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_utils</span><span class="p">(</span>
+            <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+            <span class="n">checkpoint</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span>
+            <span class="n">model_max_length</span><span class="o">=</span><span class="n">model_max_length</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="implement-the-predict-function">
+<h4>Implement the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> function<a class="headerlink" href="#implement-the-predict-function" title="Permalink to this heading"></a></h4>
+<p>Next, you need to fill in the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> function.
+The pipeline works by this function, so its input should be directly
+path to a file, string or a list of string. And it return the results users expect.
+You can use <code class="docutils literal notranslate"><span class="pre">self.model</span></code> to get your model for inference.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyPipeline</span><span class="p">(</span><span class="n">Pipeline</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_results</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="c1"># Get results from the input</span>
+
+        <span class="k">if</span> <span class="n">output_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span>
+        <span class="k">if</span> <span class="n">temp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">temp_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span>
+
+
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">]:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_for_string</span><span class="p">(</span><span class="n">example</span><span class="o">=</span><span class="nb">input</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;txt&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">]:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_for_text</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="nb">input</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;pdf&quot;</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_for_pdf</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="nb">input</span><span class="p">)</span>
+
+        <span class="c1"># Save predicted results as a text file</span>
+        <span class="k">if</span> <span class="n">save_results</span> <span class="ow">and</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">]:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+            <span class="c1"># The output filename is default to input filename with the abbr. of the task name appending to it.</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s2">_rsp.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;tagged_text&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+        <span class="k">return</span> <span class="n">results</span>
+</pre></div>
+</div>
+<p>An example of a task-specific pipeline and the <code class="docutils literal notranslate"><span class="pre">predict()</span></code>:</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">SciAssist.ReferenceStringParsing.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dehyphen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<cite>str</cite> or <cite>List[str]</cite> or <cite>os.PathLike</cite>) – <p>Can be either:</p>
+<blockquote>
+<div><ul>
+<li><p>A string, the reference string to be parsed.</p></li>
+<li><p>A list of strings to be parsed.</p></li>
+<li><p>A path to a <em>.txt</em> file to be parsed. Each line of the source file contains a
+reference string.</p></li>
+<li><p>A path to a <em>.pdf</em> file to be parsed, a raw scientific document without processing.
+The pipeline will automatically extract the reference strings from the pdf.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>type</strong> (<cite>str</cite>, default to <cite>pdf</cite>) – <p>The type of input, can be either:</p>
+<blockquote>
+<div><ul>
+<li><p><cite>str</cite> or <cite>string</cite>.</p></li>
+<li><p><cite>text`or `txt</cite> for a .txt file.</p></li>
+<li><p><cite>pdf</cite> for a pdf file. This is the default value.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>dehyphen</strong> (<cite>bool</cite>, default to <cite>False</cite>) – Whether to remove hyphens in raw text.</p></li>
+<li><p><strong>output_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory in which the predicted results files should be stored.
+If not provided, it will use the <cite>output_dir</cite> set for the pipeline.</p></li>
+<li><p><strong>temp_dir</strong> (<cite>str</cite> or <cite>os.PathLike</cite>, <em>optional</em>) – Path to a directory which holds temporary files such as <cite>.tei.xml</cite>.
+If not provided, it will use the <cite>temp_dir</cite> set for the pipeline.</p></li>
+<li><p><strong>save_results</strong> (<cite>bool</cite>, default to <cite>True</cite>) – Whether to save the tagged labels in a <em>.txt</em> file.
+<strong>Note</strong>: This is invalid when <cite>type</cite> is set to <cite>str</cite> or <cite>string</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[{“tagged_text”: tagged_text, “tokens”: tokens_list ,”tags”: tags_list } , … ]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>List[Dict]</cite></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">SciAssist</span> <span class="kn">import</span> <span class="n">ReferenceStringParsing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">ReferenceStringParsing</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;Waleed Ammar, Matthew E. Peters, Chandra Bhagavat- ula, and Russell Power. 2017. The ai2 system at semeval-2017 task 10 (scienceie): semi-supervised end-to-end entity and relation extraction. In ACL workshop (SemEval).&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;str&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">[{&#39;tagged_text&#39;: &#39;&lt;author&gt;Waleed&lt;/author&gt; &lt;author&gt;Ammar,&lt;/author&gt; &lt;author&gt;Matthew&lt;/author&gt; &lt;author&gt;E.&lt;/author&gt; &lt;author&gt;Peters,&lt;/author&gt; &lt;author&gt;Chandra&lt;/author&gt; &lt;author&gt;Bhagavat-&lt;/author&gt; &lt;author&gt;ula,&lt;/author&gt; &lt;author&gt;and&lt;/author&gt; &lt;author&gt;Russell&lt;/author&gt; &lt;author&gt;Power.&lt;/author&gt; &lt;date&gt;2017.&lt;/date&gt; &lt;title&gt;The&lt;/title&gt; &lt;title&gt;ai2&lt;/title&gt; &lt;title&gt;system&lt;/title&gt; &lt;title&gt;at&lt;/title&gt; &lt;title&gt;semeval-2017&lt;/title&gt; &lt;title&gt;task&lt;/title&gt; &lt;title&gt;10&lt;/title&gt; &lt;title&gt;(scienceie):&lt;/title&gt; &lt;title&gt;semi-supervised&lt;/title&gt; &lt;title&gt;end-to-end&lt;/title&gt; &lt;title&gt;entity&lt;/title&gt; &lt;title&gt;and&lt;/title&gt; &lt;title&gt;relation&lt;/title&gt; &lt;title&gt;extraction.&lt;/title&gt; &lt;booktitle&gt;In&lt;/booktitle&gt; &lt;booktitle&gt;ACL&lt;/booktitle&gt; &lt;booktitle&gt;workshop&lt;/booktitle&gt; &lt;booktitle&gt;(SemEval).&lt;/booktitle&gt;&#39;,</span>
+<span class="go">&#39;tokens&#39;: [&#39;Waleed&#39;, &#39;Ammar,&#39;, &#39;Matthew&#39;, &#39;E.&#39;, &#39;Peters,&#39;, &#39;Chandra&#39;, &#39;Bhagavat-&#39;, &#39;ula,&#39;, &#39;and&#39;, &#39;Russell&#39;, &#39;Power.&#39;, &#39;2017.&#39;, &#39;The&#39;, &#39;ai2&#39;, &#39;system&#39;, &#39;at&#39;, &#39;semeval-2017&#39;, &#39;task&#39;, &#39;10&#39;, &#39;(scienceie):&#39;, &#39;semi-supervised&#39;, &#39;end-to-end&#39;, &#39;entity&#39;, &#39;and&#39;, &#39;relation&#39;, &#39;extraction.&#39;, &#39;In&#39;, &#39;ACL&#39;, &#39;workshop&#39;, &#39;(SemEval).&#39;],</span>
+<span class="go">&#39;tags&#39;: [&#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;author&#39;, &#39;date&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;title&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;, &#39;booktitle&#39;]}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="make-the-new-pipeline-easy-to-import">
+<h4>Make the new pipeline easy to import<a class="headerlink" href="#make-the-new-pipeline-easy-to-import" title="Permalink to this heading"></a></h4>
+<p>After you get a new pipeline, import it in <code class="docutils literal notranslate"><span class="pre">SciAssist/__init__.py</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">SciAssist.pipelines.new_task</span> <span class="kn">import</span> <span class="n">MyPipeline</span>
+</pre></div>
+</div>
+<p>Finally, users can import it directly from <code class="docutils literal notranslate"><span class="pre">SciAssist</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">SciAssist</span> <span class="kn">import</span> <span class="n">MyPipeline</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">MyPipeline</span><span class="p">()</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, WING-NUS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
