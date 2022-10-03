@@ -1,6 +1,7 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
 
 import os
+from pathlib import Path
 from typing import Any, List
 
 import numpy as np
@@ -36,7 +37,7 @@ class MupBartLitModule(LightningModule):
         self.test_gen_lens = []
         self.test_gen_len = 0
 
-        self.save_path = os.path.join(self.model.model_dir,self.model.save_name)
+        self.save_path = Path(os.path.join(self.model.model_dir,self.model.save_name))
 
     def forward(self, inputs):
         return self.hparams.model(**inputs)

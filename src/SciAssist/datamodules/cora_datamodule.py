@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 import datasets
@@ -22,6 +23,7 @@ class CoraDataModule(LightningDataModule):
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
+        self.data_cache_dir = Path(self.hparams.data_cache_dir)
         self.data_utils = self.hparams.data_utils
         self.data_collator = self.data_utils.collator()
 
@@ -36,7 +38,7 @@ class CoraDataModule(LightningDataModule):
     def prepare_data(self) -> DatasetDict:
         raw_datasets = datasets.load_dataset(
             self.hparams.data_repo,
-            cache_dir=self.hparams.data_cache_dir
+            cache_dir=self.data_cache_dir
         )
         return raw_datasets
 
