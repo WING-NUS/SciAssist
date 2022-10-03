@@ -3,13 +3,12 @@
 <div align="center">
    
 # SciAssist
+[![PyPI Status](https://badge.fury.io/py/sciassist.svg)](https://badge.fury.io/py/sciassist)
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
 <a href="https://hydra.cc/"><img alt="Config: Hydra" src="https://img.shields.io/badge/Config-Hydra-89b8cd"></a>
 <a href="https://github.com/ashleve/lightning-hydra-template"><img alt="Template" src="https://img.shields.io/badge/-Lightning--Hydra--Template-017F2F?style=flat&logo=github&labelColor=gray"></a><br>
-[![Paper](http://img.shields.io/badge/paper-arxiv.1001.2234-B31B1B.svg)](https://www.nature.com/articles/nature14539)
-[![Conference](http://img.shields.io/badge/AnyConference-year-4b44ce.svg)](https://papers.nips.cc/paper/2020)
-<a href="https://github.com/ashleve/lightning-hydra-template"><img alt="Template" src="https://img.shields.io/badge/-Lightning--Hydra--Template-017F2F?style=flat&logo=github&labelColor=gray"></a><br>
+[![ReadTheDocs](https://readthedocs.org/projects/wing-sciassist/badge/)](https://wing-sciassist.readthedocs.io/en/latest/)
   <br> <br>
   <a href="#about">About</a> •
   <a href="#installation">Installation</a> •
@@ -126,7 +125,7 @@ source_text, summ = pipeline.predict("raw.pdf")
 
 ## Develop
 Here's a simple introduction about how to incorporate a new task into SciAssist.
-For details and examples, see [REAMDE_details.md](README_details.md).
+For details and examples, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/index.html).
 ### How to train on a new task
 For a new task, the most important things are the dataset and the model to be used.
 #### To prepare your dataset
@@ -146,7 +145,7 @@ Also, create a config file in [configs/model](src/SciAssist/configs/model).
 Actually there have been a perfect train_pipeline in our project, so there's no need to write a train pipeline yourself. 
 To prepare the LightningDataModule and LightningModule is all you need to do. 
 
-You can learn the procedure in [REAMDE_details.md](README_details.md).
+You can learn the procedure in [SciAssist's documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#create-a-trainer-and-start-training).
 
 #### To train
 Finally, specify your data and model, and train your model with the command line:
