@@ -37,7 +37,7 @@ class Pipeline():
 
         self.config = TASKS[task_name][model_name]
         self.model_name = model_name
-        self.model = load_model(config=self.config, cache_dir=self.cache_dir)
+        self.model = load_model(config=self.config, cache_dir=self.cache_dir, device=self.device)
         if device in ["cuda", "gpu"] and torch.cuda.is_available():
             self.device = torch.device("cuda")
             self.model.cuda()

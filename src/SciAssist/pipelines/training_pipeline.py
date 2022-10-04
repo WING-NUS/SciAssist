@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import List, Optional
 
 import hydra
@@ -29,7 +30,7 @@ def train(config: DictConfig) -> Optional[float]:
             hydra.utils.get_original_cwd(), ckpt_path
         )
 
-    model_dir = config.paths.get("model_dir")
+    model_dir = Path(config.paths.get("model_dir"))
     os.makedirs(model_dir, exist_ok=True)
 
     # Init lightning datamodule

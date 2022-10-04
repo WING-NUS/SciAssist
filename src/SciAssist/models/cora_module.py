@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any, List
 
 import matplotlib.pyplot as plt
@@ -41,7 +42,7 @@ class CoraLitModule(LightningModule):
         self.val_micro_f1_best = MaxMetric()
         self.val_macro_f1_best = MaxMetric()
         self.best_f1 = 0
-        self.save_path = os.path.join(self.model.model_dir,self.model.save_name)
+        self.save_path = Path(os.path.join(self.model.model_dir,self.model.save_name))
 
 
 
