@@ -42,7 +42,7 @@ TASKS = {
 
 }
 
-def load_model(config: Dict, cache_dir=BASE_CACHE_DIR ):
+def load_model(config: Dict, cache_dir=BASE_CACHE_DIR, device="gpu"):
     '''
 
     Args:
@@ -61,7 +61,8 @@ def load_model(config: Dict, cache_dir=BASE_CACHE_DIR ):
     print("Loading the model...")
     model_class = config["model"]
     model = model_class(cache_dir=cache_dir)
-    state_dict = torch.hub.load_state_dict_from_url(config["model_dict_url"], model_dir=cache_dir)
+    map_location = None if torch.cuda.is_available() and device in ["gpu","cuda"] else torch.device("cpu")
+    state_dict = torch.hub.load_state_dict_from_url(config["model_dict_url"], model_dir=cache_dir, map_location=map_location)
     model.load_state_dict(state_dict)
     model.eval()
 

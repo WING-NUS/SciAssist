@@ -23,6 +23,7 @@ class CoraDataModule(LightningDataModule):
     ):
         super().__init__()
         self.save_hyperparameters(logger=False)
+        # In case of path problem on windows
         self.data_cache_dir = Path(self.hparams.data_cache_dir)
         self.data_utils = self.hparams.data_utils
         self.data_collator = self.data_utils.collator()
