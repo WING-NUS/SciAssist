@@ -43,11 +43,14 @@ run_grobid
 
 Here are some example usages.
 
-_Reference string parsing:_
+**Reference string parsing:**
 ```python
 from SciAssist import ReferenceStringParsing
 
-pipeline = ReferenceStringParsing()
+# Set device="cpu" if you want to use only CPU. The default device is "gpu".
+# pipleine = ReferenceStringParsing(device="cpu")
+pipeline = ReferenceStringParsing(device="gpu")
+
 # For string
 tagged_result, tokens, tags = pipeline.predict(
     """Calzolari, N. (1982) Towards the organization of lexical definitions on a 
@@ -58,11 +61,15 @@ tagged_result, tokens, tags  = pipeline.predict("test.txt", type="txt")
 # For pdf
 tagged_result, tokens, tags = pipeline.predict("test.pdf")
 ```
-_Summarizarion for single document:_
+
+**Summarizarion for single document:**
 ```python
 from SciAssist import SingleSummarization
 
-pipeline = SingleSummarization()
+# Set device="cpu" if you want to use only CPU. The default device is "gpu".
+# pipleine = SingleSummarization(device="cpu")
+pipeline = SingleSummarization(device="gpu")
+
 text = """1 INTRODUCTION . Statistical learning theory studies the learning 
 properties of machine learning algorithms , and more fundamentally , the conditions
  under which learning from finite data is possible . In this context , classical 
@@ -123,80 +130,15 @@ source_text, summ = pipeline.predict("raw.pdf")
 
 ```
 
-## Develop
-Here's a simple introduction about how to incorporate a new task into SciAssist.
-For details and examples, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/index.html).
-### How to train on a new task
-For a new task, the most important things are the dataset and the model to be used.
-#### To prepare your dataset
-Basically, you can create a **DataModule** in [datamodules/](src/SciAssist/datamodules/) to prepare your dataloader.
-For example, we have [cora_datamodule.py](src/SciAssist/datamodules/cora_datamodule.py) for Cora dataset. 
+## Contribution
+Here's a simple introduction about how to incorporate a new task into SciAssist. 
+Generally, to add a new task, you will need to:
 
-Then, create a _.yaml_ in [configs/datamodule](src/SciAssist/configs/datamodule) to instantiate your datamodule. 
-
-
-#### To add a model
-All the components of a model should be included in [models/components](src/SciAssist/models/components), including the model structure or a customed tokenizer and so on. 
-
-Next, define the logic of training, validation and test for your model in a **LightningModule**.
-Also, create a config file in [configs/model](src/SciAssist/configs/model).
-
-#### To create a Trainer
-Actually there have been a perfect train_pipeline in our project, so there's no need to write a train pipeline yourself. 
-To prepare the LightningDataModule and LightningModule is all you need to do. 
-
-You can learn the procedure in [SciAssist's documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#create-a-trainer-and-start-training).
-
-#### To train
-Finally, specify your data and model, and train your model with the command line:
-```bash
-python train.py trainer=gpu datamodule=dataconfig model=modelconfig
-```
-You can change other configs in this way too. For example:
-
-Train model with default configuration:
-
-```bash
-# train on CPU
-
-python train.py trainer=cpu
-
-# train on GPU
-python train.py trainer=gpu 
-
-```
-
-Train model with chosen experiment configuration from [configs/experiment/](src/SciAssist/configs/experiment/):
-
-```bash
-python train.py experiment=experiment_name.yaml
-```
-
-You can override any parameter from command line like this:
-
-```bash
-python train.py trainer.max_epochs=20 datamodule.batch_size=64
-```
-
-To show the full stack trace for error occurred during training or testing:
-
-```bash
-HYDRA_FULL_ERROR=1 python train.py
-```
- 
-
-
-### How to build a pipeline for a new task
-As SciAssist aims to serve users, you need to write a pipeline easy to use.
-The pipelines are stored in [pipelines](src/SciAssist/pipelines). 
-
-For convenience, we don't use hydra in a pipeline. 
-So simply create a _xx.py_ file, we'd like to encapsulate involved functions 
-in a class derived from `Pipeline`, where we can specify a default model and allow
-users to choose one at the same time.
-We list all provided tasks and available models in [pipelines/__init__.py](src/SciAssist/pipelines/__init__.py).
-We recommend to name the pipeline class by the task, just like `ReferenceStringParsing`.
-
-The most important function is `predict(..)`, which we hope users can easily invoke 
-in the way described in [Usage](#Usage). 
+    1. Git clone this repo and prepare the virtual environment.
+    2. Install Grobid Server.
+    3. Create a LightningModule and a DataLightningModule.
+    4. Train a model.
+    5. Provide a pipeline for users.
+    
+We provide a step-by-step contribution guide, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#).
 
