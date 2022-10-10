@@ -26,7 +26,7 @@ This is the repository of SciAssist, which is a toolkit to assist scientists' re
 ``` bash
 pip install SciAssist
 ```
-### Setup Grobid for pdf processing
+#### Setup Grobid for pdf processing
 After you install the package, you can simply setup grobid with the CLI:
 ```bash
 setup_grobid
@@ -48,18 +48,18 @@ Here are some example usages.
 from SciAssist import ReferenceStringParsing
 
 # Set device="cpu" if you want to use only CPU. The default device is "gpu".
-# pipleine = ReferenceStringParsing(device="cpu")
-pipeline = ReferenceStringParsing(device="gpu")
+# ref_parser = ReferenceStringParsing(device="cpu")
+ref_parser = ReferenceStringParsing(device="gpu")
 
 # For string
-tagged_result, tokens, tags = pipeline.predict(
+res = ref_parser.predict(
     """Calzolari, N. (1982) Towards the organization of lexical definitions on a 
     database structure. In E. Hajicova (Ed.), COLING '82 Abstracts, Charles 
     University, Prague, pp.61-64.""", type="str")
 # For text
-tagged_result, tokens, tags  = pipeline.predict("test.txt", type="txt")
+res  = ref_parser.predict("test.txt", type="txt")
 # For pdf
-tagged_result, tokens, tags = pipeline.predict("test.pdf")
+res = ref_parser.predict("test.pdf")
 ```
 
 **Summarizarion for single document:**
@@ -68,65 +68,27 @@ from SciAssist import Summarization
 
 # Set device="cpu" if you want to use only CPU. The default device is "gpu".
 # pipleine = Summarization(device="cpu")
-pipeline = Summarization(device="gpu")
+summerizer = Summarization(device="gpu")
 
-text = """1 INTRODUCTION . Statistical learning theory studies the learning 
-properties of machine learning algorithms , and more fundamentally , the conditions
- under which learning from finite data is possible . In this context , classical 
-learning theory focuses on the size of the hypothesis space in terms of different 
-complexity measures , such as combinatorial dimensions , covering numbers and 
-Rademacher/Gaussian complexities ( Shalev-Shwartz & Ben-David , 2014 ; Boucheron 
-et al. , 2005 ) . Another more recent approach is based on defining suitable notions 
-of stability with respect to perturbation of the data ( Bousquet & Elisseeff , 2001 ; 
-Kutin & Niyogi , 2002 ) . In this view , the continuity of the process that maps 
-data to estimators is crucial , rather than the complexity of the hypothesis space . 
-Different notions of stability can be considered , depending on the data perturbation
- and metric considered ( Kutin & Niyogi , 2002 ) . Interestingly , the stability and
- complexity approaches to characterizing the learnability of problems are not at odds 
-with each other , and can be shown to be equivalent as shown in Poggio et al . 
-( 2004 ) and Shalev-Shwartz et al . ( 2010 ) . In modern machine learning 
-overparameterized models , with a larger number of parameters than the size of the 
-training data , have become common . The ability of these models to generalize is well
- explained by classical statistical learning theory as long as some form of 
-regularization is used in the training process ( Bühlmann & Van De Geer , 2011 ; 
-Steinwart & Christmann , 2008 ) . However , it was recently shown - first for deep 
-networks ( Zhang et al. , 2017 ) , and more recently for kernel methods ( Belkin et 
-al. , 2019 ) - that learning is possible in the absence of regularization , i.e. , 
-when perfectly fitting/interpolating the data . Much recent work in statistical 
-learning theory has tried to find theoretical ground for this empirical finding . 
-Since learning using models that interpolate is not exclusive to deep neural networks
- , we study generalization in the presence of interpolation in the case of kernel 
-methods . We study both linear and kernel least squares problems in this paper . Our 
-Contributions : • We characterize the generalization properties of interpolating 
-solutions for linear and kernel least squares problems using a stability approach . 
-While the ( uniform ) stability properties of regularized kernel methods are well 
-known ( Bousquet & Elisseeff , 2001 ) , we study interpolating solutions of the 
-unregularized ( `` ridgeless '' ) regression problems . • We obtain an upper bound 
-on the stability of interpolating solutions , and show that this upper bound is 
-minimized by the minimum norm interpolating solution . This also means that among 
-all interpolating solutions , the minimum norm solution has the best test error . 
-In particular , the same conclusion is also true for gradient descent , since it 
-converges to the minimum norm solution in the setting we consider , see e.g . Rosasco 
-& Villa ( 2015 ) . • Our stability bounds show that the average stability of the 
-minimum norm solution is controlled by the condition number of the empirical kernel 
-matrix . It is well known that the numerical stability of the least squares solution 
-is governed by the condition number of the associated kernel matrix ( see the 
-discussion of why overparametrization is “ good ” in Poggio et al . ( 2019 ) ) . Our 
-results show that the condition number also controls stability ( and hence , test 
-error ) in a statistical sense . Organization : In section 2 , we introduce basic 
-ideas in statistical learning and empirical risk minimization , as well as the 
-notation used in the rest of the paper . In section 3 , we briefly recall some 
-definitions of stability . In section 4 , we study the stability of interpolating 
-solutions to kernel least squares and show that the minimum norm solutions minimize 
-an upper bound on the stability . In section 5 we discuss our results in the context 
-of recent work on high dimensional regression . """
+text = """1 INTRODUCTION . Statistical learning theory studies the learning properties of machine learning algorithms , and more fundamentally , the conditions under which learning from finite data is possible . 
+In this context , classical learning theory focuses on the size of the hypothesis space in terms of different complexity measures , such as combinatorial dimensions , covering numbers and Rademacher/Gaussian complexities ( Shalev-Shwartz & Ben-David , 2014 ; Boucheron et al. , 2005 ) . 
+Another more recent approach is based on defining suitable notions of stability with respect to perturbation of the data ( Bousquet & Elisseeff , 2001 ; Kutin & Niyogi , 2002 ) . 
+In this view , the continuity of the process that maps data to estimators is crucial , rather than the complexity of the hypothesis space . 
+Different notions of stability can be considered , depending on the data perturbation and metric considered ( Kutin & Niyogi , 2002 ) . 
+Interestingly , the stability and complexity approaches to characterizing the learnability of problems are not at odds with each other , and can be shown to be equivalent as shown in Poggio et al . ( 2004 ) and Shalev-Shwartz et al . ( 2010 ) . 
+In modern machine learning overparameterized models , with a larger number of parameters than the size of the training data , have become common . 
+The ability of these models to generalize is well explained by classical statistical learning theory as long as some form of regularization is used in the training process ( Bühlmann & Van De Geer , 2011 ; Steinwart & Christmann , 2008 ) . 
+However , it was recently shown - first for deep networks ( Zhang et al. , 2017 ) , and more recently for kernel methods ( Belkin et al. , 2019 ) - that learning is possible in the absence of regularization , i.e. , when perfectly fitting/interpolating the data . 
+Much recent work in statistical learning theory has tried to find theoretical ground for this empirical finding . 
+Since learning using models that interpolate is not exclusive to deep neural networks , we study generalization in the presence of interpolation in the case of kernel methods . 
+We study both linear and kernel least squares problems in this paper . """
 
 # For string
-source_text, summ = pipeline.predict(text, type="str")
+res = summerizer.predict(text, type="str")
 # For text
-source_text, summ = pipeline.predict("bodytext.txt", type="txt")
+res = summerizer.predict("bodytext.txt", type="txt")
 # For pdf
-source_text, summ = pipeline.predict("raw.pdf")
+res = summerizer.predict("raw.pdf")
 
 ```
 
@@ -142,4 +104,3 @@ Generally, to add a new task, you will need to:
     
 We provide a step-by-step contribution guide, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#).
 
-## Lisence
