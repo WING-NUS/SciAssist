@@ -71,7 +71,7 @@ For example, create a pipeline to summarize a document and specify a model and t
 
 .. code-block:: python
 
-    >>> from SciAssist import SingleSummarization
+    >>> from SciAssist import Summarization
     >>> from transformers import AutoTokenizer
 
     >>> tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
@@ -97,8 +97,8 @@ Reference string parsing
 Single document summarization 
 """""""""""""""""""""""""""""
 
-.. _SingleSummarization:
+.. _Summarization:
 
-.. autoclass:: SciAssist.SingleSummarization
+.. autoclass:: SciAssist.Summarization
     :members: predict
 

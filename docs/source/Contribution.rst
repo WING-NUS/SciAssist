@@ -486,4 +486,35 @@ Finally, users can import it directly from ``SciAssist``.
     pipeline = MyPipeline()
     res = pipeline.predict(input)
 
+You can change other configs in this way too. For example:
 
+Train model with default configuration:
+
+.. code-block:: bash
+
+    # train on CPU
+
+    python train.py trainer=cpu
+
+# train on GPU
+python train.py trainer=gpu
+
+```
+
+Train model with chosen experiment configuration from [configs/experiment/](src/SciAssist/configs/experiment/):
+
+```bash
+python train.py experiment=experiment_name.yaml
+```
+
+You can override any parameter from command line like this:
+
+```bash
+python train.py trainer.max_epochs=20 datamodule.batch_size=64
+```
+
+To show the full stack trace for error occurred during training or testing:
+
+```bash
+HYDRA_FULL_ERROR=1 python train.py
+```

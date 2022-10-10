@@ -10,7 +10,7 @@ from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 
 
-class SingleSummarization(Pipeline):
+class Summarization(Pipeline):
     """
     The pipeline for single document summarization.
 
@@ -119,8 +119,8 @@ class SingleSummarization(Pipeline):
 
         Examples:
 
-             >>> from SciAssist import SingleSummarization
-             >>> pipeline = SingleSummarization()
+             >>> from SciAssist import Summarization
+             >>> pipeline = Summarization()
              >>> res = pipeline.predict('N18-3011.pdf', type="pdf", num_beams=4, num_return_sequences=2)
              >>> res["summary"]
              ['The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction. ',

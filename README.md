@@ -13,7 +13,7 @@
   <a href="#about">About</a> •
   <a href="#installation">Installation</a> •
   <a href="#usage">Usage</a> •
-  <a href="#develop">Develop</a> 
+  <a href="#contribution">Contribution</a> 
   <br> <br>
 </div>
 
@@ -64,11 +64,11 @@ tagged_result, tokens, tags = pipeline.predict("test.pdf")
 
 **Summarizarion for single document:**
 ```python
-from SciAssist import SingleSummarization
+from SciAssist import Summarization
 
 # Set device="cpu" if you want to use only CPU. The default device is "gpu".
-# pipleine = SingleSummarization(device="cpu")
-pipeline = SingleSummarization(device="gpu")
+# pipleine = Summarization(device="cpu")
+pipeline = Summarization(device="gpu")
 
 text = """1 INTRODUCTION . Statistical learning theory studies the learning 
 properties of machine learning algorithms , and more fundamentally , the conditions
@@ -142,3 +142,4 @@ Generally, to add a new task, you will need to:
     
 We provide a step-by-step contribution guide, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#).
 
+## Lisence
