@@ -1,5 +1,6 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
 
+import json
 import os
 from typing import List, Tuple, Optional, Union, Dict
 
@@ -103,7 +104,7 @@ class ReferenceStringParsing(Pipeline):
                 Path to a directory which holds temporary files such as `.tei.xml`.
                 If not provided, it will use the `temp_dir` set for the pipeline.
             save_results (`bool`, default to `True`):
-                Whether to save the tagged labels in a *.txt* file.
+                Whether to save the results in a *.json* file.
                 **Note**: This is invalid when `type` is set to `str` or `string`.
 
         Returns:
@@ -138,9 +139,9 @@ class ReferenceStringParsing(Pipeline):
         if save_results and type not in ["str", "string"]:
             os.makedirs(output_dir, exist_ok=True)
             output_file = os.path.basename(input)
-            with open(os.path.join(output_dir, f"{output_file[:-4]}_rsp.txt"), "w") as output:
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_rsp.json"), "w") as output:
                 for res in results:
-                    output.write(res["tagged_text"] + "\n")
+                    output.write(json.dumps(res) + "\n")
 
         return results
 

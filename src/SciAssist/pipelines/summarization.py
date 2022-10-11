@@ -1,5 +1,5 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
-
+import json
 import os
 from typing import List, Tuple, Optional, Dict
 
@@ -110,7 +110,7 @@ class Summarization(Pipeline):
             num_return_sequences(`int`):
                 The number of independently computed returned sequences for each element in the batch.
             save_results (`bool`, default to `True`):
-                Whether to save the tagged labels in a *.txt* file.
+                Whether to save the results in a *.json* file.
                 **Note**: This is invalid when `type` is set to `str` or `string`.
 
         Returns:
@@ -146,9 +146,8 @@ class Summarization(Pipeline):
         if save_results and type not in ["str", "string"]:
             os.makedirs(output_dir, exist_ok=True)
             output_file = os.path.basename(input)
-            with open(os.path.join(output_dir, f"{output_file[:-4]}_summ.txt"), "w") as output:
-                for res in results["summary"]:
-                    output.write(res + "\n")
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_summ.json"), "w") as output:
+                output.write(json.dumps(results) + "\n")
 
         return results
 
