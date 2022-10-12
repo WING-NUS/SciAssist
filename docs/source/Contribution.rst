@@ -3,6 +3,29 @@ Contributing Guide
 
 .. _Contribution:
 
+To contribute on a new task, here's a step-by-step guide:
+
+1. :ref:`Fork the SciAssist repository <fork>`
+2. :ref:`Install Grobid Server for pdf processing <grobid>`
+3. :ref:`Train a model on a new task <how-to-train>`
+
+    - :ref:`Create datautils for data processing <DataUtils>`
+    - :ref:`Prepare your datamodule to load data <DataModule>`
+    - :ref:`Prepare your model <LightningModule>`
+    - :ref:`Create a Trainer <about-trainer>`
+    - :ref:`Start training <Train>`
+
+4. :ref:`Build a pipeline for the new task <how-to-build-pipelines>`
+
+    - :ref:`add-model-configs`
+    - :ref:`create-pipelines`
+    - :ref:`predict`
+    - :ref:`about-importing`
+
+
+
+.. _fork:
+
 1. Fork the SciAssist repository
 --------------------------------
 
@@ -25,6 +48,7 @@ Clone the forked repository and install the package dependencies in ``requiremen
     # install requirements
     pip install -r requirements.txt
 
+.. _grobid:
 
 2. Install Grobid Server for pdf processing
 -------------------------------------------
@@ -44,6 +68,8 @@ To setup Grobid conveniently, you can use the CLIs provided by SciAssist.
 
     # run Grobid
     run_grobid
+
+.. _how-to-train:
 
 3. Train a model on a new task
 ---------------------------------
@@ -87,6 +113,7 @@ For example, this is a datautil for Seq2Seq task:
     :members:
     :member-order: bysource
 
+.. _DataModule:
 
 Prepare your datamodule
 """"""""""""""""""""""""""
@@ -170,6 +197,8 @@ A data config file looks like this:
       _target_: SciAssist.utils.data_utils.DataUtilsForTokenClassification
 
 For more details about **DataModule**, refer `DataLightningModule <https://pytorch-lightning.readthedocs.io/en/latest/data/datamodule.html>`_.
+
+.. _LightningModule:
 
 Prepare your model
 """"""""""""""""""
@@ -265,8 +294,11 @@ Also, create a config file in ``configs/model``:
         save_name: ${model_name}
         model_dir: ${paths.model_dir}
 
+
 Create a Trainer and start training
 """""""""""""""""""""""""""""""""""
+
+.. _about-trainer:
 
 Create a trainer
 ::::::::::::::::
@@ -372,7 +404,7 @@ To show the full stack trace for error occurred during training or testing:
 
 
 
-
+.. _how-to-build-pipelines:
 
 4. Build a pipeline for the new task
 --------------------------------------
@@ -390,6 +422,8 @@ The pipelines are stored in ``SciAssist/pipelines``. Generally, you need to:
 
 Step-by-step recipe to add a pipeline
 '''''''''''''''''''''''''''''''''''''''
+
+.. _add-model-configs:
 
 Add the model configs
 """"""""""""""""""""""
@@ -416,6 +450,9 @@ After you have a new model, add its corresponding configs to the dict ``Tasks`` 
                 "data_utils": DataUtilsForNewTask,
             },
         },
+
+
+.. _create-pipelines:
 
 Create a task-specific pipeline class
 """"""""""""""""""""""""""""""""""""""
@@ -456,6 +493,7 @@ In your new pipeline class, specify a default ``model_name`` to choose a model a
             )
 
 
+.. _predict:
 
 Implement the ``predict()`` function
 """"""""""""""""""""""""""""""""""""""
@@ -503,7 +541,9 @@ An example of a task-specific pipeline and the ``predict()`` function:
 
 .. autofunction:: SciAssist.ReferenceStringParsing.predict
     :noindex:
-    
+
+.. _about-importing:
+
 Make the new pipeline easy to import 
 """"""""""""""""""""""""""""""""""""""""""""""
 
