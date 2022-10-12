@@ -9,11 +9,10 @@ API
 General overview
 '''''''''''''''''''''''''''
 
-SciAssist provides parsers to make it simple
+SciAssist provides apis to make it simple
 to use any provided model for inference on various tasks.
-
-Each task is associated with a parser,
-and the parser automatically loads a default model capable of inference for your task.
+And they will automatically load a default model capable of inference for your task.
+To do inference on a task, you can:
 
 1.  Start by creating a task-specific parser. Taking ``reference string parsing`` as example:
 

@@ -336,6 +336,42 @@ Finally, you can choose your config files and train your model with the command 
 
     python SciAssist/train.py trainer=gpu datamodule=dataconfig model=modelconfig
 
+You can change other configs in this way too. For example:
+
+Train model with default configuration:
+
+.. code-block:: bash
+
+    # train on CPU
+
+    python train.py trainer=cpu
+
+    # train on GPU
+    python train.py trainer=gpu
+
+
+Train model with chosen experiment configuration from ``configs/experiment/``:
+
+.. code-block:: bash
+
+    python train.py experiment=experiment_name.yaml
+
+
+You can override any parameter from command line like this:
+
+.. code-block:: bash
+
+    python train.py trainer.max_epochs=20 datamodule.batch_size=64
+
+
+To show the full stack trace for error occurred during training or testing:
+
+.. code-block:: bash
+
+    HYDRA_FULL_ERROR=1 python train.py
+
+
+
 
 
 4. Build a pipeline for the new task
@@ -362,7 +398,7 @@ After you have a new model, add its corresponding configs to the dict ``Tasks`` 
 
 - **model**: A ModelClass in ``models/components``.
 - **model_dict_url**: URL to download the model dict. 
-  ``Pipeline`` will load model weights from the `.pt` according to the URL.  
+  ``Pipeline`` will load model weights from the ``.pt`` according to the URL.  
 - **data_utils**: A DataUtils Class.
 
 .. code-block:: python
@@ -384,13 +420,13 @@ After you have a new model, add its corresponding configs to the dict ``Tasks`` 
 Create a task-specific pipeline class
 """"""""""""""""""""""""""""""""""""""
 A task-specific pipeline class should be inherited from ``Pipeline`` class, 
-which loads a model according to `task_name` and `model_name`. 
+which loads a model according to ``task_name`` and ``model_name``. 
 
 .. autoclass:: SciAssist.pipelines.pipeline.Pipeline
     :members:
 
 
-In your new pipeline class, specify a default `model_name` to choose a model and instantiate a :ref:`DataUtils <DataUtils>`.
+In your new pipeline class, specify a default ``model_name`` to choose a model and instantiate a :ref:`DataUtils <DataUtils>`.
 
 .. code-block:: python
 
@@ -463,7 +499,7 @@ You can use ``self.model`` to get your model for inference.
             return results
 
 
-An example of a task-specific pipeline and the ``predict()``:
+An example of a task-specific pipeline and the ``predict()`` function:
 
 .. autofunction:: SciAssist.ReferenceStringParsing.predict
     :noindex:
@@ -486,35 +522,3 @@ Finally, users can import it directly from ``SciAssist``.
     pipeline = MyPipeline()
     res = pipeline.predict(input)
 
-You can change other configs in this way too. For example:
-
-Train model with default configuration:
-
-.. code-block:: bash
-
-    # train on CPU
-
-    python train.py trainer=cpu
-
-# train on GPU
-python train.py trainer=gpu
-
-```
-
-Train model with chosen experiment configuration from [configs/experiment/](src/SciAssist/configs/experiment/):
-
-```bash
-python train.py experiment=experiment_name.yaml
-```
-
-You can override any parameter from command line like this:
-
-```bash
-python train.py trainer.max_epochs=20 datamodule.batch_size=64
-```
-
-To show the full stack trace for error occurred during training or testing:
-
-```bash
-HYDRA_FULL_ERROR=1 python train.py
-```
