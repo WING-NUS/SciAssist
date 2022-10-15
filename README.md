@@ -1,4 +1,14 @@
 
+### **CHANGE LOG
+
+**Source Code**
+- Rename `SingleSummarization` to `Summarization`.
+- Change the format of output files from `.txt` to `.json`.
+
+**Documentation**
+- Move the definition of `Pipeline` class from `Usage` to `Contribution Guide`.
+- Add catalog for Contribution Guide.
+- Add examples for choosing devices in `Usage`.
 
 <div align="center">
    
