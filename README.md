@@ -104,3 +104,6 @@ Generally, to add a new task, you will need to:
     
 We provide a step-by-step contribution guide, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#).
 
+## LICENSE
+This toolkit is licensed under the `Attribution-NonCommercial-ShareAlike 4.0 International`.
+Read [LICENSE](https://github.com/WING-NUS/SciAssist/blob/main/LICENSE) for more information.
