@@ -4,10 +4,9 @@ import os
 
 import nltk
 
+from SciAssist import BASE_OUTPUT_DIR, BASE_TEMP_DIR
 from SciAssist.bin.doc2json.doc2json.grobid2json.process_pdf import process_pdf_file
 
-BASE_OUTPUT_DIR = "output"
-BASE_TEMP_DIR = "output/.temp"
 
 def get_reference(json_file: str, output_dir: str = BASE_OUTPUT_DIR):
 

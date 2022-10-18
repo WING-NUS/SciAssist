@@ -12,6 +12,7 @@ from SciAssist.datamodules.components.cora_label import LABEL_NAMES
 from SciAssist.datamodules.components.cora_label import label2id
 from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_reference
+from SciAssist.utils.windows_pdf2text import windows_get_reference
 
 
 class ReferenceStringParsing(Pipeline):
@@ -57,6 +58,7 @@ class ReferenceStringParsing(Pipeline):
             tokenizer: PreTrainedTokenizer = None,
             checkpoint="allenai/scibert_scivocab_uncased",
             model_max_length=512,
+            os_name=None,
     ):
 
         super().__init__(task_name="reference-string-parsing", model_name=model_name, device=device,
@@ -67,6 +69,7 @@ class ReferenceStringParsing(Pipeline):
             checkpoint=checkpoint,
             model_max_length=model_max_length
         )
+        self.os_name = os_name if os_name != None else os.name
 
     def predict(
             self, input, type: str = "pdf", dehyphen=False,
@@ -288,9 +291,13 @@ class ReferenceStringParsing(Pipeline):
            `List[Dict]`:
                 Tagged strings, origin tokens and labels predicted by the model.
         """
+        if self.os_name == "posix":
+            # Convert PDF to JSON with doc2json.
+            json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
+            # Extract reference strings from JSON and save them in TEXT format.
+            text_file = get_reference(json_file=json_file, output_dir=output_dir)
+        elif self.os_name == "nt":
+            text_file = windows_get_reference(path=filename, output_dir=output_dir)
 
-        # Convert PDF to JSON with doc2json.
-        json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
-        # Extract reference strings from JSON and save them in TEXT format.
-        text_file = get_reference(json_file=json_file, output_dir=output_dir)
+
         return self._predict_for_text(text_file, dehyphen=dehyphen)

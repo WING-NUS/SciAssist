@@ -8,6 +8,7 @@ from datasets import Dataset
 from SciAssist import BASE_TEMP_DIR, BASE_OUTPUT_DIR
 from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
+from SciAssist.utils.windows_pdf2text import windows_get_bodytext
 
 
 class Summarization(Pipeline):
@@ -56,7 +57,8 @@ class Summarization(Pipeline):
             checkpoint="facebook/bart-large-cnn",
             model_max_length=1024,
             max_source_length=1024,
-            max_target_length=128
+            max_target_length=128,
+            os_name=None,
     ):
         super().__init__(task_name="single-doc-summarization", model_name=model_name, device=device,
                          cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
@@ -70,6 +72,7 @@ class Summarization(Pipeline):
             max_target_length=max_target_length
         )
         self.tokenizer = self.data_utils.tokenizer
+        self.os_name = os_name if os_name != None else os.name
 
     def predict(
             self, input: str, type: str = "pdf",
@@ -266,10 +269,13 @@ class Summarization(Pipeline):
             `Dict`:
                 Predicted summarization and source text.
         """
+        if self.os_name == "posix":
+            # Convert PDF to JSON with doc2json.
+            json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
+            # Extract bodytext from pdf and save them in TEXT format.
+            text_file = get_bodytext(json_file=json_file, output_dir=output_dir)
+        elif self.os_name == "nt":
+            text_file = windows_get_bodytext(path=filename, output_dir=output_dir)
 
-        # Convert PDF to JSON with doc2json.
-        json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
-        # Extract bodytext from pdf and save them in TEXT format.
-        text_file = get_bodytext(json_file=json_file, output_dir=output_dir)
         # Do summarization
         return self._summarize_for_text(text_file, num_beams=num_beams, num_return_sequences=num_return_sequences)
