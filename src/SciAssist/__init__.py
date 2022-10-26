@@ -17,4 +17,4 @@ BASE_CACHE_DIR = os.path.join(USER_DIR, ".cache/sciassist")
 
 
 from SciAssist.pipelines.reference_string_parsing import ReferenceStringParsing
-from SciAssist.pipelines.summarization import SingleSummarization
+from SciAssist.pipelines.summarization import Summarization

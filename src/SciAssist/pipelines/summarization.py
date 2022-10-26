@@ -1,5 +1,5 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
-
+import json
 import os
 from typing import List, Tuple, Optional, Dict
 
@@ -8,9 +8,10 @@ from datasets import Dataset
 from SciAssist import BASE_TEMP_DIR, BASE_OUTPUT_DIR
 from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
+from SciAssist.utils.windows_pdf2text import windows_get_bodytext
 
 
-class SingleSummarization(Pipeline):
+class Summarization(Pipeline):
     """
     The pipeline for single document summarization.
 
@@ -56,7 +57,8 @@ class SingleSummarization(Pipeline):
             checkpoint="facebook/bart-large-cnn",
             model_max_length=1024,
             max_source_length=1024,
-            max_target_length=128
+            max_target_length=128,
+            os_name=None,
     ):
         super().__init__(task_name="single-doc-summarization", model_name=model_name, device=device,
                          cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
@@ -70,6 +72,7 @@ class SingleSummarization(Pipeline):
             max_target_length=max_target_length
         )
         self.tokenizer = self.data_utils.tokenizer
+        self.os_name = os_name if os_name != None else os.name
 
     def predict(
             self, input: str, type: str = "pdf",
@@ -110,7 +113,7 @@ class SingleSummarization(Pipeline):
             num_return_sequences(`int`):
                 The number of independently computed returned sequences for each element in the batch.
             save_results (`bool`, default to `True`):
-                Whether to save the tagged labels in a *.txt* file.
+                Whether to save the results in a *.json* file.
                 **Note**: This is invalid when `type` is set to `str` or `string`.
 
         Returns:
@@ -119,8 +122,8 @@ class SingleSummarization(Pipeline):
 
         Examples:
 
-             >>> from SciAssist import SingleSummarization
-             >>> pipeline = SingleSummarization()
+             >>> from SciAssist import Summarization
+             >>> pipeline = Summarization()
              >>> res = pipeline.predict('N18-3011.pdf', type="pdf", num_beams=4, num_return_sequences=2)
              >>> res["summary"]
              ['The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction. ',
@@ -146,9 +149,8 @@ class SingleSummarization(Pipeline):
         if save_results and type not in ["str", "string"]:
             os.makedirs(output_dir, exist_ok=True)
             output_file = os.path.basename(input)
-            with open(os.path.join(output_dir, f"{output_file[:-4]}_summ.txt"), "w") as output:
-                for res in results["summary"]:
-                    output.write(res + "\n")
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_summ.json"), "w") as output:
+                output.write(json.dumps(results) + "\n")
 
         return results
 
@@ -267,10 +269,13 @@ class SingleSummarization(Pipeline):
             `Dict`:
                 Predicted summarization and source text.
         """
+        if self.os_name == "posix":
+            # Convert PDF to JSON with doc2json.
+            json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
+            # Extract bodytext from pdf and save them in TEXT format.
+            text_file = get_bodytext(json_file=json_file, output_dir=output_dir)
+        elif self.os_name == "nt":
+            text_file = windows_get_bodytext(path=filename, output_dir=output_dir)
 
-        # Convert PDF to JSON with doc2json.
-        json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
-        # Extract bodytext from pdf and save them in TEXT format.
-        text_file = get_bodytext(json_file=json_file, output_dir=output_dir)
         # Do summarization
         return self._summarize_for_text(text_file, num_beams=num_beams, num_return_sequences=num_return_sequences)

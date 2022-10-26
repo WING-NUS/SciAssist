@@ -1,5 +1,6 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
 
+import json
 import os
 from typing import List, Tuple, Optional, Union, Dict
 
@@ -11,6 +12,7 @@ from SciAssist.datamodules.components.cora_label import LABEL_NAMES
 from SciAssist.datamodules.components.cora_label import label2id
 from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.utils.pdf2text import process_pdf_file, get_reference
+from SciAssist.utils.windows_pdf2text import windows_get_reference
 
 
 class ReferenceStringParsing(Pipeline):
@@ -56,6 +58,7 @@ class ReferenceStringParsing(Pipeline):
             tokenizer: PreTrainedTokenizer = None,
             checkpoint="allenai/scibert_scivocab_uncased",
             model_max_length=512,
+            os_name=None,
     ):
 
         super().__init__(task_name="reference-string-parsing", model_name=model_name, device=device,
@@ -66,6 +69,7 @@ class ReferenceStringParsing(Pipeline):
             checkpoint=checkpoint,
             model_max_length=model_max_length
         )
+        self.os_name = os_name if os_name != None else os.name
 
     def predict(
             self, input, type: str = "pdf", dehyphen=False,
@@ -103,7 +107,7 @@ class ReferenceStringParsing(Pipeline):
                 Path to a directory which holds temporary files such as `.tei.xml`.
                 If not provided, it will use the `temp_dir` set for the pipeline.
             save_results (`bool`, default to `True`):
-                Whether to save the tagged labels in a *.txt* file.
+                Whether to save the results in a *.json* file.
                 **Note**: This is invalid when `type` is set to `str` or `string`.
 
         Returns:
@@ -138,9 +142,9 @@ class ReferenceStringParsing(Pipeline):
         if save_results and type not in ["str", "string"]:
             os.makedirs(output_dir, exist_ok=True)
             output_file = os.path.basename(input)
-            with open(os.path.join(output_dir, f"{output_file[:-4]}_rsp.txt"), "w") as output:
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_rsp.json"), "w") as output:
                 for res in results:
-                    output.write(res["tagged_text"] + "\n")
+                    output.write(json.dumps(res) + "\n")
 
         return results
 
@@ -287,9 +291,13 @@ class ReferenceStringParsing(Pipeline):
            `List[Dict]`:
                 Tagged strings, origin tokens and labels predicted by the model.
         """
+        if self.os_name == "posix":
+            # Convert PDF to JSON with doc2json.
+            json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
+            # Extract reference strings from JSON and save them in TEXT format.
+            text_file = get_reference(json_file=json_file, output_dir=output_dir)
+        elif self.os_name == "nt":
+            text_file = windows_get_reference(path=filename, output_dir=output_dir)
 
-        # Convert PDF to JSON with doc2json.
-        json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
-        # Extract reference strings from JSON and save them in TEXT format.
-        text_file = get_reference(json_file=json_file, output_dir=output_dir)
+
         return self._predict_for_text(text_file, dehyphen=dehyphen)
