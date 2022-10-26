@@ -74,5 +74,5 @@ def windows_get_bodytext(path, output_dir: str = BASE_OUTPUT_DIR):
     output_path = os.path.join(output_dir, os.path.basename(path)[:-4] + "_body.txt")
     with open(output_path,"w",encoding="utf-8") as output:
         for i in res["body_text"]:
-            output.write(i+"\n")
+            output.write(i+" ")
     return output_path
