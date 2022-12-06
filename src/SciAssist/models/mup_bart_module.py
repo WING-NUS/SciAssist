@@ -11,14 +11,14 @@ from torchmetrics import MaxMetric
 from torchmetrics.text.rouge import ROUGEScore
 from transformers import AutoModelForSeq2SeqLM
 
-from SciAssist.utils.data_utils import DataCollatorForSeq2Seq
+from SciAssist.utils.data_utils import DataUtilsForSeq2Seq
 
 
 class MupBartLitModule(LightningModule):
     def __init__(
         self,
         model: AutoModelForSeq2SeqLM,
-        data_utils = DataCollatorForSeq2Seq,
+        data_utils = DataUtilsForSeq2Seq,
         lr: float = 2e-5,
     ):
         super().__init__()
