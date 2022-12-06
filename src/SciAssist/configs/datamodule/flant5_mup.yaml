@@ -1,0 +1,12 @@
+_target_: SciAssist.datamodules.mup_datamodule.MupDataModule
+
+data_repo: "allenai/mup"
+train_batch_size: 1
+num_workers: 0
+pin_memory: False
+data_cache_dir:  ${paths.data_dir}/mup/
+data_utils:
+  _target_: SciAssist.utils.data_utils.DataUtilsForT5
+  checkpoint: "google/flan-t5-large"
+  model_max_length: 512
+  max_source_length: 512
