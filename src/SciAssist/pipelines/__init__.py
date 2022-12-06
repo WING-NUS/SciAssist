@@ -7,6 +7,7 @@ import torch
 from SciAssist import BASE_CACHE_DIR
 from SciAssist.models.components.bart_summarization import BartForSummarization
 from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
+from SciAssist.models.components.flant5_summarization import FlanT5ForSummarization
 from SciAssist.utils.data_utils import (
     DataUtilsForTokenClassification,
     DataUtilsForSeq2Seq,
@@ -37,8 +38,21 @@ TASKS = {
             "model": BartForSummarization,
             "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/bart-large-cnn-e5.pt",
             "data_utils": DataUtilsForSeq2Seq,
+        },
+        "flan-t5": {
+            "model": FlanT5ForSummarization,
+            "model_dict_url": None,
+            "data_utils": DataUtilsForSeq2Seq,
         }
-    }
+    },
+
+    # "controlled-summarization": {
+    #     "default": {
+    #         "model": FrostForSummarization,
+    #         "model_dict_url": None,
+    #         "data_utils": DataUtilsForFrost,
+    #     }
+    # }
 
 }
 
@@ -62,8 +76,9 @@ def load_model(config: Dict, cache_dir=BASE_CACHE_DIR, device="gpu"):
     model_class = config["model"]
     model = model_class(cache_dir=cache_dir)
     map_location = None if torch.cuda.is_available() and device in ["gpu","cuda"] else torch.device("cpu")
-    state_dict = torch.hub.load_state_dict_from_url(config["model_dict_url"], model_dir=cache_dir, map_location=map_location)
-    model.load_state_dict(state_dict)
+    if config["model_dict_url"]!=None:
+        state_dict = torch.hub.load_state_dict_from_url(config["model_dict_url"], model_dir=cache_dir, map_location=map_location)
+        model.load_state_dict(state_dict)
     model.eval()
 
     return model
