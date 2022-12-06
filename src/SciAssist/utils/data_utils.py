@@ -755,7 +755,7 @@ class DataUtilsForT5():
 
         # Select input column
         inputs = examples[inputs_column]
-        inputs = [self.propmt + raw_text for raw_text in inputs]
+        inputs = [self.prompt + raw_text for raw_text in inputs]
         # Setup the tokenizer for inputs
         model_inputs = self.tokenizer(inputs, max_length=self.max_source_length, padding="max_length", truncation=True)
 
