@@ -3,16 +3,16 @@
 # specify here default training configuration
 defaults:
   - _self_
-  - datamodule: cora.yaml
-  - model: cora.yaml
-  - callbacks: default.yaml
+  - datamodule: dataset_extraction.yaml
+  - model: dataset_extraction.yaml
+  - callbacks: dataset_extraction.yaml
   - logger: null # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
   - trainer: default.yaml
   - log_dir: default.yaml
   - paths: default.yaml
   # experiment configs allow for version control of specific configurations
   # e.g. best hyperparameters for each combination of model and datamodule
-  - experiment: null
+  - experiment: dataset_extraction.yaml
 
   # debugging config (enable through command line, e.g. `python train.py debug=default)
   - debug: null
@@ -55,4 +55,4 @@ seed: null
 # default name for the experiment, determines logging folder path
 # (you can overwrite this name in experiment configs)
 name: "default"
-model_name: "scibert-uncased.pt"
+model_name: "roberta-base"

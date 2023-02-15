@@ -1,4 +1,3 @@
-# main developer: Yixi Ding <dingyixi@hotmail.com>
 from pathlib import Path
 from typing import Optional
 
@@ -26,25 +25,39 @@ class DatasetExtractionModule(LightningDataModule):
         self.save_hyperparameters(logger=False)
         self.data_cache_dir = Path(self.hparams.data_cache_dir)
         self.data_utils = self.hparams.data_utils
-        self.data_collator = None
 
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
 
-    def prepare_data(self):
-        print('*************************************')
-        print(self.data_cache_dir)
-        self.data_utils.load_tags(self.data_cache_dir)
-        print(self.data_utils.tag2idx)
-        print(self.data_utils.idx2tag)
 
     def setup(self, stage: Optional[str] = None):
         if not self.data_train and not self.data_val and not self.data_test:
-            self.data_train = self.data_utils.tokenize_and_align_labels("train")
-            self.data_val = self.data_utils.tokenize_and_align_labels("val")
-            # If labels are not provided, delete the column "labels"
-            self.data_test = self.data_utils.tokenize_and_align_labels("test")
+            data_files = {"data": "sentences.txt", "labels": "labs.txt", "tags": "tags.txt"}
+            print(self.hparams.data_repo + '/train/')
+            raw_train_dataset = datasets.load_dataset(
+                path='text',
+                data_dir=self.hparams.data_repo + '/train/',
+                data_files=data_files,
+                cache_dir=self.data_cache_dir
+            )
+            raw_val_dataset = datasets.load_dataset(
+                path='text',
+                data_dir=self.hparams.data_repo + '/val/',
+                data_files=data_files,
+                cache_dir=self.data_cache_dir
+            )
+            raw_test_dataset = datasets.load_dataset(
+                path='text',
+                data_dir=self.hparams.data_repo + '/test/',
+                data_files=data_files,
+                cache_dir=self.data_cache_dir
+            )
+
+            self.data_train = self.data_utils.tokenize_and_align_labels(raw_train_dataset)
+            self.data_val = self.data_utils.tokenize_and_align_labels(raw_val_dataset)
+            self.data_test = self.data_utils.tokenize_and_align_labels(raw_test_dataset)
+
 
     def train_dataloader(self):
         return DataLoader(
@@ -62,7 +75,7 @@ class DatasetExtractionModule(LightningDataModule):
             batch_size=self.hparams.train_batch_size,
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
-            collate_fn=self.data_train.collate_fn,
+            collate_fn=self.data_val.collate_fn,
             shuffle=False,
         )
 
@@ -72,7 +85,7 @@ class DatasetExtractionModule(LightningDataModule):
             batch_size=self.hparams.train_batch_size,
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
-            collate_fn=self.data_train.collate_fn,
+            collate_fn=self.data_test.collate_fn,
             shuffle=False,
         )
 

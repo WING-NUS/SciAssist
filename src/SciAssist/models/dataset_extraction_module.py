@@ -8,7 +8,7 @@ import torch
 from pytorch_lightning import LightningModule
 import sklearn
 
-from SciAssist.models.components.bert_dataset_extraction import RobertaForDatasetExtraction
+from SciAssist.models.components.bert_dataset_extraction import BertForDatasetExtraction
 from SciAssist.utils.data_utils import DataUtilsForDatasetExtraction
 from seqeval.metrics import f1_score, accuracy_score, classification_report
 from seqeval.scheme import IOB2
@@ -16,7 +16,7 @@ from seqeval.scheme import IOB2
 class DatasetExtractionModule(LightningModule):
     def __init__(
         self,
-        model: RobertaForDatasetExtraction,
+        model: BertForDatasetExtraction,
         data_utils: DataUtilsForDatasetExtraction,
         lr: float = 1e-5,
     ):
@@ -41,19 +41,14 @@ class DatasetExtractionModule(LightningModule):
     def forward(self, inputs):
         return self.hparams.model(**inputs)
 
+
     def on_train_start(self):
         self.val_acc_best = 0
         self.val_f1_best = 0
 
+
     def step(self, batch: Any):
-        batch_data = batch[0]
-        batch_token_starts = batch[1]
-        batch_tags = batch[2]
-        batch_labels = batch[3]
-
-        batch_masks = (batch_data != 1)
-
-        inputs = {'input_subwords':batch_data, 'input_token_start_indexs':batch_token_starts, 'attention_mask':batch_masks, 'ner_tags':batch_tags, 'cls_labels':batch_labels}
+        inputs, batch_tags, batch_labels = batch, batch["ner_tags"], batch["cls_labels"]
         outputs = self.forward(inputs)
 
         loss = outputs[0]
@@ -62,13 +57,16 @@ class DatasetExtractionModule(LightningModule):
 
         return loss, ner_output, cla_output, batch_tags, batch_labels
 
+
     def training_step(self, batch: Any, batch_idx: int):
         loss, ner_output, cla_output, batch_tags, batch_labels = self.step(batch)
         self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
         return {"loss": loss}
 
+
     def training_epoch_end(self, outputs: List[Any]):
         pass
+
 
     def validation_step(self, batch: Any, batch_idx: int):
         loss, ner_output, cla_output, batch_tags, batch_labels = self.step(batch)
@@ -77,8 +75,8 @@ class DatasetExtractionModule(LightningModule):
 
         self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
         self.log("val/f1", self.val_f1, on_step=False, on_epoch=True, prog_bar=False)
-=
         return {"loss": loss, "pred_tags": pred_tags, "true_tags": true_tags, "pred_labels": pred_labels, "true_labels": true_labels}
+
 
     def validation_epoch_end(self, outputs):
         true_tags = []
@@ -90,10 +88,6 @@ class DatasetExtractionModule(LightningModule):
             true_tags.extend(output["true_tags"])
             pred_labels.extend(output["pred_labels"])
             true_labels.extend(output["true_labels"])
-        #print(pred_tags)
-        #print(true_tags)
-        #print(pred_labels)
-        #print(true_labels)
 
         self.val_f1 = f1_score(true_tags, pred_tags, mode='strict', scheme=IOB2)
         self.val_cla_f1 = sklearn.metrics.f1_score(true_labels, pred_labels)
@@ -114,7 +108,6 @@ class DatasetExtractionModule(LightningModule):
         self.log("val/f1_best", self.val_f1_best, on_epoch=True, prog_bar=True)
         print("Epoch:", self.current_epoch, ", val/f1:", self.val_f1, ", val/ner_acc:", self.val_ner_acc, ", val/cla_f1:", self.val_cla_f1, ", val/cla_acc:", self.val_cla_acc, ", val/best_f1:", self.val_f1_best)
         print(classification_report(true_tags, pred_tags, mode='strict', scheme=IOB2))
-
 
 
     def test_step(self, batch: Any, batch_idx: int):
@@ -138,10 +131,6 @@ class DatasetExtractionModule(LightningModule):
             true_tags.extend(output["true_tags"])
             pred_labels.extend(output["pred_labels"])
             true_labels.extend(output["true_labels"])
-        # print(len(pred_tags))
-        # print(len(true_tags))
-        # print(len(pred_labels))
-        # print(len(true_labels))
 
         self.test_f1 = f1_score(true_tags, pred_tags, mode='strict', scheme=IOB2)
         self.test_ner_acc = accuracy_score(true_tags, pred_tags)

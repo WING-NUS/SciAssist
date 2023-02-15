@@ -5,7 +5,7 @@ from torch.nn import CrossEntropyLoss
 from torchcrf import CRF
 import torch
 
-class RobertaForDatasetExtraction(nn.Module):
+class BertForDatasetExtraction(nn.Module):
     def __init__(
         self,
         model_checkpoint: str = "roberta-base",

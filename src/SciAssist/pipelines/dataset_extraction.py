@@ -1,5 +1,3 @@
-# main developer: Yixi Ding <dingyixi@hotmail.com>
-
 import json
 import os
 from typing import List, Tuple, Optional, Union, Dict

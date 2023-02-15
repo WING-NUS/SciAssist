@@ -8,11 +8,11 @@ from SciAssist import BASE_CACHE_DIR
 from SciAssist.models.components.bart_summarization import BartForSummarization
 from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
 from SciAssist.models.components.flant5_summarization import FlanT5ForSummarization
-from SciAssist.models.components.bert_dataset_extraction import RobertaForDatasetExtraction
+from SciAssist.models.components.bert_dataset_extraction import BertForDatasetExtraction
 from SciAssist.utils.data_utils import (
     DataUtilsForTokenClassification,
     DataUtilsForSeq2Seq,
-    RobertaForDatasetExtraction
+    DataUtilsForDatasetExtraction
 )
 
 # Provided models for each task
@@ -50,7 +50,7 @@ TASKS = {
 
     "dataset-extraction": {
         "default": {
-            "model": RobertaForDatasetExtraction,
+            "model": BertForDatasetExtraction,
             "model_dict_url": None,
             "data_utils": DataUtilsForDatasetExtraction,
         },
