@@ -1,15 +1,292 @@
 from typing import List, Dict
 
+import os
 import nltk
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
+# from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 from transformers import DataCollatorForSeq2Seq
 
 from SciAssist import BASE_CACHE_DIR
 from SciAssist.datamodules.components.cora_label import label2id as cora_label2id
 from SciAssist.models.components.bart_summarization import BartForSummarization
+
+from torch.utils.data import DataLoader, Dataset
+
+
+class MyDatasetExtraction(Dataset):
+    def __init__(self, data_dir, tokenizer, data_type, token_pad_idx = 1, tag_pad_idx = -1):
+        self.data_dir = data_dir
+        self.batch_size = 8
+        self.max_len = 128
+        self.token_pad_idx = token_pad_idx
+        self.tag_pad_idx = tag_pad_idx
+        # B:0 I:1 O:2
+        
+        self.sentences_file = os.path.join(self.data_dir, data_type, 'sentences.txt')
+        self.tags_file = os.path.join(self.data_dir, data_type, 'tags.txt')
+        self.labels_file = os.path.join(self.data_dir, data_type, 'labs.txt')
+
+        tags = self.load_tags()
+        self.tag2idx = {tag: idx for idx, tag in enumerate(tags)}
+        self.idx2tag = {idx: tag for idx, tag in enumerate(tags)}
+        self.tokenizer = tokenizer
+        
+        self.dataset = self.preprocess()
+        
+
+    def load_tags(self):
+        tags = []
+        file_path = os.path.join(self.data_dir, 'tags.txt')
+        with open(file_path, 'r') as file:
+            for tag in file:
+                tags.append(tag.strip())
+        return tags
+
+     
+    def __len__(self):
+        """get dataset size"""
+        return self.dataset['size']
+ 
+
+    def __getitem__(self, idx):
+        """sample data to get batch"""
+        sentences = self.dataset['data'][idx]
+        labels = self.dataset['labels'][idx]
+        tags = self.dataset['tags'][idx]
+        return [sentences, labels, tags]
+
+
+    def collate_fn(self, batch):
+        """"""
+        sentences = [x[0] for x in batch]
+        labels = [x[1] for x in batch]
+        tags = [x[2] for x in batch]
+        # batch length
+        batch_len = len(sentences)  # batch size
+        
+        batch_max_subwords_len = max([len(s[0]) for s in sentences])
+        max_subword_len = min(batch_max_subwords_len, self.max_len)
+        max_token_len = 0
+ 
+        # padding data 初始化
+        batch_data = self.token_pad_idx * np.ones((batch_len, max_subword_len))
+        batch_token_starts = []
+ 
+        # padding and aligning
+        for j in range(batch_len):
+            cur_subwords_len = len(sentences[j][0])  # word_id list
+            if cur_subwords_len <= max_subword_len:
+                batch_data[j][:cur_subwords_len] = sentences[j][0]
+            else:
+                batch_data[j] = sentences[j][0][:max_subword_len]
+            token_start_ids = sentences[j][-1]
+            token_starts = np.zeros(max_subword_len)
+            token_starts[[idx for idx in token_start_ids if idx < max_subword_len]] = 1
+            batch_token_starts.append(token_starts)
+            max_token_len = max(int(sum(token_starts)), max_token_len)
+        
+        batch_tags = self.tag_pad_idx * np.ones((batch_len, max_token_len))
+        batch_labels = np.ones((batch_len, ))
+        for j in range(batch_len):
+            batch_labels[j] = labels[j]
+            cur_tags_len = len(tags[j])
+            if cur_tags_len <= max_token_len:
+                batch_tags[j][:cur_tags_len] = tags[j]
+            else:
+                batch_tags[j] = tags[j][:max_token_len]
+ 
+        # convert data to torch LongTensors
+        batch_data = torch.tensor(batch_data, dtype = torch.long)
+        batch_token_starts = torch.tensor(np.array(batch_token_starts), dtype = torch.long)
+        batch_tags = torch.tensor(np.array(batch_tags), dtype = torch.long)
+        batch_labels = torch.tensor(np.array(batch_labels), dtype = torch.long)
+        # print(batch_data.size())
+        # print(batch_token_starts.size())
+        # print(batch_labels.size())
+ 
+        return batch_data, batch_token_starts, batch_tags, batch_labels
+
+    def preprocess(self):
+        """Loads sentences and tags from their corresponding files. 
+            Maps tokens and tags to their indices and stores them in the provided dict d.
+        """
+        sentences = []
+        labels = []
+        tags = []
+        d = {}
+
+        with open(self.sentences_file, 'r') as file:
+            sent_data = file.readlines()
+            for i, line in enumerate(sent_data):
+                # replace each token by its index
+                tokens = line.strip().split(' ')
+#                 print(tokens)
+                subwords = list(map(self.tokenizer.tokenize, tokens)) # 每个词切分成子词
+#                 print(subwords)
+                subword_lengths = list(map(len, subwords)) # 记录子词的长度，用于对齐tag
+#                 print(subword_lengths)
+                subwords = ['<s>'] + [item for indices in subwords for item in indices] # 组成输入 token
+#                 print(subwords)
+                token_start_idxs = 1 + np.cumsum([0] + subword_lengths[:-1]) # 记录每个token开始的位置
+#                 print(token_start_idxs)
+#                 print(self.tokenizer.convert_tokens_to_ids(subwords), token_start_idxs)
+                sentences.append((self.tokenizer.convert_tokens_to_ids(subwords), token_start_idxs))
+
+        if self.labels_file != None:
+            with open(self.labels_file, 'r') as labels_file:
+                labels_data = labels_file.readlines()
+                # 构建分类标签
+                for i, line in enumerate(labels_data):
+                    labels.append(int(labels_data[i].strip()))
+
+            assert len(sentences) == len(labels)
+            d['labels'] = labels
+
+        if self.tags_file != None:
+            with open(self.tags_file, 'r') as file:
+                tags_data = file.readlines()
+                for line in tags_data:
+                    # replace each tag by its index
+                    tag_seq = [self.tag2idx.get(tag) for tag in line.strip().split(' ')]
+                    tags.append(tag_seq)
+
+            # checks to ensure there is a tag for each token
+            assert len(sentences) == len(tags)
+            for i in range(len(sentences)):
+                assert len(tags[i]) == len(sentences[i][-1])
+
+            d['tags'] = tags
+
+        # storing sentences and tags in dict d
+        d['data'] = sentences
+        d['size'] = len(sentences)
+        return d
+
+
+class DataUtilsForDatasetExtraction():
+    """
+
+    Args:
+        tokenizer (`PretrainedTokenizer`, default to None):
+            The tokenizer for tokenization.
+        checkpoint (`str`):
+            The checkpoint from which the tokenizer is loaded.
+        model_max_length (`int`, *optional*): The max sequence length the model accepts.
+        max_source_length (`int`, *optional*): The max length of the input text.
+        max_target_length (`int`, *optional*): The max length of the generated summary.
+    """
+    def __init__(self, tokenizer = None,
+                 checkpoint = "roberta-base",
+                 model_max_length = 128
+                 ):
+
+        self.checkpoint = checkpoint
+        self.model_max_length = model_max_length
+        self.data_dir = None
+
+        if tokenizer is None:
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.checkpoint,
+                model_max_length = self.model_max_length,
+                cache_dir=BASE_CACHE_DIR,
+                use_fast=True
+            )
+        else:
+            self.tokenizer = tokenizer
+
+        self.tag2idx = {'B-DATA': 0, 'I-DATA': 1, 'O': 2}
+        self.idx2tag = {0: 'B-DATA', 1: 'I-DATA', 2: 'O'}
+
+
+    def load_tags(self, data_dir):
+        self.data_dir = data_dir
+        tags = []
+        file_path = os.path.join(self.data_dir, 'tags.txt')
+        with open(file_path, 'r') as file:
+            for tag in file:
+                tags.append(tag.strip())
+
+        self.tag2idx = {tag: idx for idx, tag in enumerate(tags)}
+        self.idx2tag = {idx: tag for idx, tag in enumerate(tags)}
+
+
+    def tokenize_and_align_labels(self, data_type):
+
+        """
+
+        Process the dataset for model input, for example, do tokenization and prepare label_ids.
+
+        Args:
+            examples (`Dataset`): { "text": [s1, s2, ...], "summary": [l1, l2, ...]}
+            inputs (`str`): The name of input column
+            labels (`str`): The name of target column
+
+        Returns:
+            `Dict`: {"input_ids": input_ids, "attention_mask": attention_mask, "labels": label_ids }
+
+        """
+        
+        """Loads sentences and tags from their corresponding files.
+            Maps tokens and tags to their indices and stores them in the provided dict d.
+        """
+
+        processed_dataset = MyDatasetExtraction(self.data_dir, self.tokenizer, data_type, token_pad_idx = 1, tag_pad_idx = -1)
+        return processed_dataset
+
+
+    def postprocess(self, ner_output, cla_output, batch_tags, batch_labels):
+
+        """
+        Process model's outputs and get the final results rather than simple ids.
+
+        Args:
+            preds (Tensor): Prediction labels, the output of the model.
+            labels (Tensor): True labels
+
+        Returns:
+            `(LongTensor, LongTensor)`: decoded_preds, decoded_labels
+
+        """
+        pred_tags = []
+        true_tags = []
+        pred_labels = []
+        true_labels = []
+
+        ner_output = ner_output.detach().cpu().numpy()
+        cla_output = cla_output.detach().cpu().numpy()
+        batch_tags = batch_tags.to('cpu').numpy()
+        batch_labels = batch_labels.to('cpu').numpy()
+
+        # print(self.idx2tag)
+
+        pred_tags.extend([[self.idx2tag.get(idx) for idx in indices] for indices in np.argmax(ner_output, axis=2)])
+        true_tags.extend([[self.idx2tag.get(idx) if idx != -1 else 'O' for idx in indices] for indices in batch_tags])
+
+        true_labels.extend(batch_labels)
+        pred_labels.extend(cla_output)
+        pred_labels = np.argmax(pred_labels, axis=1)
+
+        assert len(pred_tags) == len(true_tags)
+
+        return pred_tags, true_tags, pred_labels, true_labels
+
+    def get_dataloader(self):
+
+        """
+        Generate DataLoader for a dataset.
+
+        Args:
+            dataset (`Dataset`): The raw dataset.
+            inputs_column (`str`): Column name of the inputs.
+            labels_column (`str`): Column name of the labels.
+
+        Returns:
+            `DataLoader`: A dataloader for the dataset. Will be used for inference.
+        """
+
+        pass
 
 
 class DataUtilsForSeq2Seq():

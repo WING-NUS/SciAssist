@@ -1,0 +1,11 @@
+_target_: SciAssist.models.dataset_extraction_module.DatasetExtractionModule
+lr: 1e-5
+data_utils:
+  _target_: SciAssist.utils.data_utils.DataUtilsForDatasetExtraction
+
+model:
+  _target_: SciAssist.models.components.bert_dataset_extraction.RobertaForDatasetExtraction
+  model_checkpoint: "roberta-base"
+  cache_dir: ${paths.root_dir}/.cache/
+  save_name: ${model_name}
+  model_dir: ${paths.model_dir}
