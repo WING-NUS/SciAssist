@@ -7,6 +7,7 @@ BASE_TEMP_DIR = os.path.join(ROOT_DIR,"output/.temp")
 
 USER_DIR_MAP = {
     "linux": "HOME",
+    "darwin": "HOME",
     "windows": "USERPROFILE"
 }
 USER_DIR = os.environ[USER_DIR_MAP[platform.system().lower()]]
