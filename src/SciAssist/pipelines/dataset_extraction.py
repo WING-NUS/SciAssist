@@ -1,40 +1,45 @@
 import json
 import os
+import re
 from typing import List, Tuple, Optional, Union, Dict
 
-from datasets import Dataset
 from transformers import PreTrainedTokenizer
 
 from SciAssist import BASE_OUTPUT_DIR, BASE_TEMP_DIR
 from SciAssist.pipelines.pipeline import Pipeline
-from SciAssist.utils.pdf2text import process_pdf_file, get_reference
-from SciAssist.utils.windows_pdf2text import windows_get_reference
-from SciAssist.utils.annotate_bio_tool import annotate_bio_for_textfile
+from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
+from SciAssist.utils.windows_pdf2text import windows_get_bodytext
 
 
 class DatasetExtraction(Pipeline):
     """
-    The pipeline for reference string parsing.
+
+    The pipeline for dataset extraction.
 
     Args:
         model_name (`str`, *optional*):
             A string, the *model name* of a pretrained model provided for this task.
+
         device (`str`, *optional*):
             A string, `cpu` or `gpu`.
+
         cache_dir (`str` or `os.PathLike`, *optional*):
             Path to a directory in which a downloaded pretrained model should be
             cached if the standard cache should not be used.
+
         output_dir (`str` or `os.PathLike`, *optional*):
             Path to a directory in which the predicted results files should be stored.
+
         temp_dir (`str` or `os.PathLike`, *optional*):
             Path to a directory which holds temporary files such as `.tei.xml`.
+
         tokenizer (PreTrainedTokenizer, *optional*):
             A specific tokenizer.
+
         checkpoint (`str` or `os.PathLike`, *optional*):
             A checkpoint for the tokenizer. You can also specify the `checkpoint` while
             using the default tokenizer.
             Can be either:
-
                 - A string, the *model id* of a predefined tokenizer hosted inside a model repo on huggingface.co.
                   Valid model ids can be located at the root-level, like `bert-base-uncased`, or namespaced under a
                   user or organization name, like `allenai/scibert_scivocab_uncased`.
@@ -45,6 +50,7 @@ class DatasetExtraction(Pipeline):
                   applicable to all derived classes)
 
         model_max_length (`int`, *optional*): The max sequence length the model accepts.
+
     """
 
     def __init__(
@@ -53,77 +59,67 @@ class DatasetExtraction(Pipeline):
             output_dir = None,
             temp_dir = None,
             tokenizer: PreTrainedTokenizer = None,
-            checkpoint="roberta-base",
-            model_max_length=512,
-            os_name=None,
+            checkpoint = "roberta-base",
+            model_max_length = 128,
+            os_name = None,
     ):
 
-        super().__init__(task_name="dataset-extraction", model_name=model_name, device=device,
-                         cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
+        super().__init__(task_name = "dataset-extraction", model_name = model_name, device = device,
+                         cache_dir = cache_dir, output_dir = output_dir, temp_dir = temp_dir)
 
         self.data_utils = self.data_utils(
-            tokenizer=tokenizer,
-            checkpoint=checkpoint,
-            model_max_length=model_max_length
+            tokenizer = tokenizer,
+            checkpoint = checkpoint,
+            model_max_length = model_max_length
         )
         self.os_name = os_name if os_name != None else os.name
 
-    def extract(
-            self, input, type: str = "pdf", dehyphen=False,
-            output_dir=None,
-            temp_dir=None,
-            save_results=True,
-    ):
 
+    def extract(
+            self, input, type: str = "pdf",
+            output_dir = None,
+            temp_dir = None,
+            save_results = True,
+    ):
         """
 
         Args:
             input (`str` or `List[str]` or `os.PathLike`):
                 Can be either:
-
-                    - A string, the reference string to be parsed.
-                    - A list of strings to be parsed.
-                    - A path to a *.txt* file to be parsed. Each line of the source file contains a
-                      reference string.
-                    - A path to a *.pdf* file to be parsed, a raw scientific document without processing.
-                      The pipeline will automatically extract the reference strings from the pdf.
+                    - A list of strings (sentences) to be extracted dataset mentions from.
+                    - A path to a *.txt* file to be extracted dataset mentions from.
+                    - A path to a *.pdf* file to be extracted dataset mentions from, a raw scientific document without processing. The pipeline will automatically extract the body text from the pdf.
 
             type (`str`, default to `pdf`):
                 The type of input, can be either:
-
                     - `str` or `string`.
                     - `text`or `txt` for a .txt file.
                     - `pdf` for a pdf file. This is the default value.
 
-            dehyphen (`bool`, default to `False`):
-                Whether to remove hyphens in raw text.
             output_dir (`str` or `os.PathLike`, *optional*):
                 Path to a directory in which the predicted results files should be stored.
                 If not provided, it will use the `output_dir` set for the pipeline.
+
             temp_dir (`str` or `os.PathLike`, *optional*):
                 Path to a directory which holds temporary files such as `.tei.xml`.
                 If not provided, it will use the `temp_dir` set for the pipeline.
+
             save_results (`bool`, default to `True`):
                 Whether to save the results in a *.json* file.
                 **Note**: This is invalid when `type` is set to `str` or `string`.
 
         Returns:
-            `List[Dict]`: [{"tagged_text": tagged_text, "tokens": tokens_list ,"tags": tags_list } , ... ]
-
+            `Dict`: { "dataset_mentions": [[dataset_mentions1], sentence1], [[dataset_mentions2], sentence2], ...], "text": [sentence1, sentence2, ...]}
+            Please note that only positive sentences will be shown in Dict['dataset_mentions'], while Dict['text'] will show all sentences.
 
         Examples:
-
-            >>> from SciAssist import ReferenceStringParsing
-            >>> pipeline = ReferenceStringParsing()
-            >>> pipeline.predict(
-            ...     "Waleed Ammar, Matthew E. Peters, Chandra Bhagavat- ula, and Russell Power. 2017. The ai2 system at semeval-2017 task 10 (scienceie): semi-supervised end-to-end entity and relation extraction. In ACL workshop (SemEval).",
-            ...     type="str"
-            ... )
-            [{'tagged_text': '<author>Waleed</author> <author>Ammar,</author> <author>Matthew</author> <author>E.</author> <author>Peters,</author> <author>Chandra</author> <author>Bhagavat-</author> <author>ula,</author> <author>and</author> <author>Russell</author> <author>Power.</author> <date>2017.</date> <title>The</title> <title>ai2</title> <title>system</title> <title>at</title> <title>semeval-2017</title> <title>task</title> <title>10</title> <title>(scienceie):</title> <title>semi-supervised</title> <title>end-to-end</title> <title>entity</title> <title>and</title> <title>relation</title> <title>extraction.</title> <booktitle>In</booktitle> <booktitle>ACL</booktitle> <booktitle>workshop</booktitle> <booktitle>(SemEval).</booktitle>',
-            'tokens': ['Waleed', 'Ammar,', 'Matthew', 'E.', 'Peters,', 'Chandra', 'Bhagavat-', 'ula,', 'and', 'Russell', 'Power.', '2017.', 'The', 'ai2', 'system', 'at', 'semeval-2017', 'task', '10', '(scienceie):', 'semi-supervised', 'end-to-end', 'entity', 'and', 'relation', 'extraction.', 'In', 'ACL', 'workshop', '(SemEval).'],
-            'tags': ['author', 'author', 'author', 'author', 'author', 'author', 'author', 'author', 'author', 'author', 'author', 'date', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'title', 'booktitle', 'booktitle', 'booktitle', 'booktitle']}]
+             >>> from SciAssist import DatasetExtraction
+             >>> pipeline = DatasetExtraction()
+             >>> res = pipeline.predict('N18-3011.pdf', type="pdf")
+             >>> res["dataset_mentions"]
 
         """
+
         if output_dir is None:
             output_dir = self.output_dir
         if temp_dir is None:
@@ -135,64 +131,72 @@ class DatasetExtraction(Pipeline):
             results = self._extract_for_text(filename=input)
         elif type == "pdf":
             results = self._extract_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir)
+
         # Save predicted results as a text file
-        # if save_results and type not in ["str", "string"]:
-        #     os.makedirs(output_dir, exist_ok=True)
-        #     output_file = os.path.basename(input)
-        #     with open(os.path.join(output_dir, f"{output_file[:-4]}_rsp.json"), "w") as output:
-        #         for res in results:
-        #             output.write(json.dumps(res) + "\n")
+        if save_results and type not in ["str", "string"]:
+            os.makedirs(output_dir, exist_ok=True)
+            output_file = os.path.basename(input)
+            with open(os.path.join(output_dir, f"{output_file[:-4]}_de.json"), "w") as output:
+                output.write(json.dumps(results) + "\n")
 
         return results
 
 
-    def _extract(self):
+    def _extract(
+            self,
+            examples: List[str]
+    ):
         """
-        Parse a list of tokens obtained from reference strings.
+
+        Extract dataset mentions from each sentence in the list.
 
         Args:
-            examples (`List[List[str]]`):
-                The inputs for inference, where each item is a list of tokens.
+            examples(`List[str]`): A list of sentences to be extracted dataset mentions.
 
         Returns:
-            `List[Dict]`:
-                Tagged strings, origin tokens and labels predicted by the model.
+            `Dict`: { "dataset_mentions": [[dataset_mentions1], sentence1], [[dataset_mentions2], sentence2], ...], "text": [sentence1, sentence2, ...]}
 
         """
 
-        # Prepare the dataset
-        processed_dataset = self.data_utils.tokenize_and_align_labels(data_type="inference")
-        dataloader = self.data_utils.get_dataloader(processed_dataset)
+        results = {}
 
-        pred_tags = []
+        dataset_mentions = []
+        dataset = {'data':{'text': examples}}
+        dataloader = self.data_utils.get_dataloader(dataset)
+
+        pred_output = []
         for batch in dataloader:
-            batch_data, batch_token_starts = batch
-            batch_masks = (batch_data != 1)
-            batch_output = self.model(input_subwords = batch_data, input_token_start_indexs = batch_token_starts, attention_mask = batch_masks)[0]
-            batch_output = batch_output.detach().cpu().numpy()
+            batch_output = self.model(**batch)
+            ner_output = batch_output[0]
+            ner_output = ner_output.detach().cpu().numpy()
+            pred_output.extend([[idx for idx in indices] for indices in np.argmax(ner_output, axis=2)]) # pred_output: List[List[tag_idx]] num_sentences * each_sentence_length
 
-            # Get token ids of summary
-            pred = self.model.generate(batch["input_ids"], batch["attention_mask"], num_beams, num_return_sequences)
-            # Convert token ids to text
-            decoded_preds = self.tokenizer.batch_decode(pred, skip_special_tokens=True)
+        for i, sentence in enumerate(pred_output): # for each sentence
+            entity_indexes = self.find_entity_idx(sentence) # List of entity_index pairs: [[2,2],[5,9],[16,21]]
+            if len(entity_indexes) != 0:
+                tokens = examples[i].strip().split(' ')
+                entities = self.find_entities(entity_indexes, tokens) # List of mentions in this sentence
+                dataset_mentions.append([entities, examples[i]]) # [[List of mentions in sentence1, sentence1], [List of mentions in sentence2, sentence2], ...]
 
-            results.extend(decoded_preds)
-              # shape: (batch_size, max_len, num_labels)
-            pred_tags.extend([[self.idx2tag.get(idx) for idx in indices] for indices in np.argmax(batch_output, axis=2)])
-        print(pred_tags)
+        results['dataset_mentions'] = dataset_mentions
+        results['text'] = examples
 
-        return pred_tags
+        return results
 
-    def _extract_for_string(self, example: str):
+
+    def _extract_for_string(
+            self,
+            example: Union[str, List[str]]
+    ):
         """
-        Parse a reference string.
+
+        Extract dataset mentions from each sentence in the string or list.
 
         Args:
-            example (`Union[str, List[str]]`): The string to parse.
-            dehyphen (`Optional[bool]`): Whether to remove '-', default to `False`.
+            example (`Union[str, List[str]]`): The string to be extracted dataset mentions from.
+
         Returns:
-           `List[Dict]`:
-                Tagged string, origin tokens and labels predicted by the model.
+            `Dict`: { "dataset_mentions": [[dataset_mentions1], sentence1], [[dataset_mentions2], sentence2], ...], "text": [sentence1, sentence2, ...]}
 
         """
 
@@ -201,63 +205,103 @@ class DatasetExtraction(Pipeline):
         else:
             examples = [example]
 
-        splitted_examples = [example.split() for example in examples]
-        results = self._extract()
+        results = self._extract(examples)
 
         return results
+
 
     def _extract_for_text(
             self,
-            filename: str,
-            dehyphen: Optional[bool] = False,
-    ) -> List[Dict]:
+            filename: str
+    ):
         """
 
-        Parse reference strings from a text and save the result as a text file.
+        Extract dataset mentions from each sentence of a text file and save the result as a text file.
 
         Args:
-            filename (`str`): The path to the text file to predict.
-            dehyphen (`Optional[bool]`): Whether to remove '-', default to `False`.
+            filename (`str`): The path to the text file to be extracted dataset mentions from.
 
         Returns:
-            `List[Dict]`:
-                Tagged strings, origin tokens and labels predicted by the model.
+            `Dict`: { "dataset_mentions": [[dataset_mentions1], sentence1], [[dataset_mentions2], sentence2], ...], "text": [sentence1, sentence2, ...]}
 
         """
 
-        annotate_bio_for_textfile(filename)
-        results = self._extract()
+        with open(filename, "r") as f:
+            text = f.readlines()
+            sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', text[0])
+        f.close()
+
+        results = self._extract(sentences)
 
         return results
+
 
     def _extract_for_pdf(
             self,
             filename: str,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
-            temp_dir: Optional[str] = BASE_TEMP_DIR,
-    ) -> Tuple[List[str], List[List[str]], List[List[str]]]:
+              temp_dir: Optional[str] = BASE_TEMP_DIR
+    ):
         """
-        Parse reference strings from a PDF and save the result as a text file.
+
+        Extract dataset mentions from each sentence of a pdf file and save the result as a text file.
 
         Args:
             filename (`str`): The path to the pdf file to parse.
             output_dir (`Optional[str]`): The directory to save the result file, default to `result/`.
             temp_dir (`Optional[str]`): The diretorcy to save intermediate file, default to `temp/`.
-            dehyphen (`Optional[bool]`): Whether to remove '-', default to `False`.
 
         Returns:
            `List[Dict]`:
                 Tagged strings, origin tokens and labels predicted by the model.
+
         """
+        
         if self.os_name == "posix":
             # Convert PDF to JSON with doc2json.
             json_file = process_pdf_file(input_file=filename, temp_dir=temp_dir, output_dir=temp_dir)
-            # Extract reference strings from JSON and save them in TEXT format.
-            text_file = get_reference(json_file=json_file, output_dir=output_dir)
+            # Extract bodytext from pdf and save them in TEXT format.
+            text_file = get_bodytext(json_file=json_file, output_dir=output_dir)
         elif self.os_name == "nt":
-            text_file = windows_get_reference(path=filename, output_dir=output_dir)
+            text_file = windows_get_bodytext(path=filename, output_dir=output_dir)
 
-        annotate_bio_for_textfile(filename)
-        results = self._extract()
+        with open(text_file, "r") as f:
+            text = f.readlines()
+            sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', text[0])
+        f.close()
+
+        results = self._extract(sentences)
 
         return results
+
+
+    def find_entity_indexes(self, lst):
+        indexes = []
+        i = 0
+        for i in range(len(lst)):
+            tmp = []
+            if lst[i] == 2:
+                tmp = [i,i]
+                j = i
+                while j < len(lst):
+                    if j+1 == len(lst) or lst[j+1] != 1:
+                        indexes.append(tmp)
+                        break                    
+                    else:
+                        j += 1
+                        tmp = [i,j]
+
+        return indexes
+
+
+    def find_entities(self, idx_lst, tokens):
+        dataset_mentions = []
+        for idx_pair in idx_lst:
+            if idx_pair[0] == idx_pair[1]:
+                dataset_mentions.append(tokens[idx_pair[0]])
+            else:
+                dataset_mentions.append(' '.join(tokens[idx_pair[0]:idx_pair[1] + 1]))
+
+        return dataset_mentions
+
+
