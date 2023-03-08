@@ -1,7 +1,6 @@
 import os
 
 from pdfminer.high_level import extract_pages
-from pdfminer.layout import LTTextContainer
 
 from SciAssist import BASE_OUTPUT_DIR
 
@@ -16,7 +15,7 @@ def process_pdf(path):
     }
     for page_layout in extract_pages(path):
         for element in page_layout:
-            if isinstance(element, LTTextContainer):
+            if "get_text" in dir(element):
                 text = element.get_text().replace("\n","")
                 text = text.strip()
                 if text.isdigit() == False and text != "":
@@ -27,19 +26,19 @@ def process_pdf(path):
     i = 1 # the index of the current text in raw_text
 
     while i<len(raw_text):
-        if raw_text[i].lower()=="abstract":
+        if raw_text[i] in ["abstract","Abstract", "ABSTRACT"]:
             i += 1
             break
         res["author"].append(raw_text[i])
         i += 1
 
     while i<len(raw_text):
-        if "Introduction" in raw_text[i]:
+        if "Introduction" in raw_text[i] or "INTRODUCTION" in raw_text[i]:
             break
         i += 1
 
     while i<len(raw_text):
-        if raw_text[i].lower() in ["references","reference"]:
+        if raw_text[i] in ["References","Reference", "REFERENCE", "REFERENCES"]:
             i += 1
             break
         res["body_text"].append(raw_text[i])
