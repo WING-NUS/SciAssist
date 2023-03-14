@@ -75,7 +75,7 @@ class DatasetExtraction(Pipeline):
         self.os_name = os_name if os_name != None else os.name
 
 
-    def extract(
+    def predict(
             self, input, type: str = "pdf",
             output_dir = None,
             temp_dir = None,
@@ -126,11 +126,11 @@ class DatasetExtraction(Pipeline):
             temp_dir = self.temp_dir
 
         if type in ["str", "string"]:
-            results = self._extract_for_string(example=input)
+            results = self._predict_for_string(example=input)
         elif type in ["txt", "text"]:
-            results = self._extract_for_text(filename=input)
+            results = self._predict_for_text(filename=input)
         elif type == "pdf":
-            results = self._extract_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir)
+            results = self._predict_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir)
 
         # Save predicted results as a text file
         if save_results and type not in ["str", "string"]:
@@ -142,7 +142,7 @@ class DatasetExtraction(Pipeline):
         return results
 
 
-    def _extract(
+    def _predict(
             self,
             examples: List[str]
     ):
@@ -184,7 +184,7 @@ class DatasetExtraction(Pipeline):
         return results
 
 
-    def _extract_for_string(
+    def _predict_for_string(
             self,
             example: Union[str, List[str]]
     ):
@@ -205,12 +205,12 @@ class DatasetExtraction(Pipeline):
         else:
             examples = [example]
 
-        results = self._extract(examples)
+        results = self._predict(examples)
 
         return results
 
 
-    def _extract_for_text(
+    def _predict_for_text(
             self,
             filename: str
     ):
@@ -231,12 +231,12 @@ class DatasetExtraction(Pipeline):
             sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', text[0])
         f.close()
 
-        results = self._extract(sentences)
+        results = self._predict(sentences)
 
         return results
 
 
-    def _extract_for_pdf(
+    def _predict_for_pdf(
             self,
             filename: str,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
@@ -270,7 +270,7 @@ class DatasetExtraction(Pipeline):
             sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', text[0])
         f.close()
 
-        results = self._extract(sentences)
+        results = self._predict(sentences)
 
         return results
 

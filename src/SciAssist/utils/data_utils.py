@@ -14,7 +14,7 @@ from SciAssist.models.components.bart_summarization import BartForSummarization
 
 
 class MyDatasetExtraction(Dataset):
-    def __init__(self, tokenizer, dataset, token_pad_idx = 1, tag_pad_idx = -1):
+    def __init__(self, tokenizer, dataset, token_pad_idx = 0, tag_pad_idx = -1):
         self.batch_size = 32
         self.max_len = 128
         self.token_pad_idx = token_pad_idx
@@ -60,7 +60,8 @@ class MyDatasetExtraction(Dataset):
             # print(subwords)
             subword_lengths = list(map(len, subwords)) # 记录子词的长度，用于对齐tag
             # print(subword_lengths)
-            subwords = ['<s>'] + [item for indices in subwords for item in indices] # 组成输入 token
+            subwords = ['[CLS]'] + [item for indices in subwords for item in indices]
+            # subwords = ['<s>'] + [item for indices in subwords for item in indices] # 组成输入 token
             # print(subwords)
             token_start_idxs = 1 + np.cumsum([0] + subword_lengths[:-1]) # 记录每个token开始的位置
             # print(token_start_idxs)
@@ -121,7 +122,8 @@ class MyDatasetExtraction(Dataset):
 
         processed_batch['input_subwords'] = torch.tensor(batch_data, dtype = torch.long)
         processed_batch['input_token_start_indexs'] = torch.tensor(np.array(batch_token_starts), dtype = torch.long)
-        processed_batch['attention_mask'] = (processed_batch['input_subwords'] != 1)
+        # processed_batch['attention_mask'] = (processed_batch['input_subwords'] != 1)
+        processed_batch['attention_mask'] = processed_batch['input_subwords'].gt(0)
 
         if len(batch[0]) == 3:
             batch_tags = self.tag_pad_idx * np.ones((batch_len, max_token_len))
@@ -152,7 +154,7 @@ class DataUtilsForDatasetExtraction():
         max_target_length (`int`, *optional*): The max length of the generated summary.
     """
     def __init__(self, tokenizer = None,
-                 checkpoint = "roberta-base",
+                 checkpoint = "allenai/scibert_scivocab_uncased",
                  model_max_length = 128
                  ):
 

@@ -14,13 +14,13 @@ defaults:
 # this allows you to overwrite only specified parameters
 
 # name of the run determines folder name in logs
-name: "roberta_ner"
+name: "scibert_ner"
 
-seed: 128
+seed: 176
 
 trainer:
   min_epochs: 5
-  max_epochs: 10
+  max_epochs: 6
   gradient_clip_val: 0.5
 
 module:
@@ -31,7 +31,7 @@ module:
     cache_dir: ${paths.root_dir}/.cache/
 
 datamodule:
-  data_repo: "data"
+  data_repo: "copy"
   train_batch_size: 32
   num_workers: 0
   pin_memory: False

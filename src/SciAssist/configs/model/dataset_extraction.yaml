@@ -5,7 +5,7 @@ data_utils:
 
 model:
   _target_: SciAssist.models.components.bert_dataset_extraction.BertForDatasetExtraction
-  model_checkpoint: "roberta-base"
+  model_checkpoint: "allenai/scibert_scivocab_uncased"
   cache_dir: ${paths.root_dir}/.cache/
   save_name: ${model_name}
   model_dir: ${paths.model_dir}

@@ -14,11 +14,11 @@ class DatasetExtractionModule(LightningDataModule):
     def __init__(
         self,
         data_repo: str,
-        train_batch_size: int = 8,
+        train_batch_size: int = 32,
         num_workers: int = 0,
         pin_memory: bool = False,
         data_cache_dir: str = ".cache",
-        seed: int = 777,
+        seed: int = 176,
         data_utils = DataUtilsForDatasetExtraction
     ):
         super().__init__()

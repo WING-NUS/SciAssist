@@ -8,9 +8,9 @@ import torch
 class BertForDatasetExtraction(nn.Module):
     def __init__(
         self,
-        model_checkpoint: str = "roberta-base",
+        model_checkpoint: str = "allenai/scibert_scivocab_uncased",
         cache_dir: str = ".cache",
-        save_name: str = "roberta-ner.pt",
+        save_name: str = "scibert-ner.pt",
         model_dir: str = "pretrained"
     ):
         super().__init__()
