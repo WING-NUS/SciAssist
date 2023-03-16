@@ -28,11 +28,6 @@ class BertForDatasetExtraction(nn.Module):
         # self.init_weights()
 
     def forward(self, input_subwords, input_token_start_indexs, attention_mask=None, ner_tags=None, cls_labels=None):
-        input_subwords, input_token_start_indexs
-        # print("input_subwords", input_subwords.shape)
-        # print("input_token_start_indexs", input_token_start_indexs.shape)
-        # print("attention_mask", attention_mask.shape)
-        # print("ner_tags", ner_tags.shape)
         outputs = self.bert(input_subwords,
                             attention_mask=attention_mask,
                             token_type_ids=None,
@@ -40,7 +35,6 @@ class BertForDatasetExtraction(nn.Module):
                             head_mask=None,
                             inputs_embeds=None)
         sequence_output = outputs[0]
-        # print("sequence_output", sequence_output.shape)
 
         # obtain original token representations from subwords representations (by selecting the first subword)
         origin_sequence_output = [layer[starts.nonzero().squeeze(1)] for layer, starts in zip(sequence_output, input_token_start_indexs)]

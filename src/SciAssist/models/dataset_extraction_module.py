@@ -25,12 +25,12 @@ class DatasetExtractionModule(LightningModule):
         self.data_utils = data_utils
         self.model = model
 
-        self.val_cla_acc = 0
-        self.test_cla_acc = 0
+        self.val_cls_acc = 0
+        self.test_cls_acc = 0
         self.val_f1 = 0
         self.test_f1 = 0
-        self.val_cla_f1 = 0
-        self.test_cla_f1 = 0
+        self.val_cls_f1 = 0
+        self.test_cls_f1 = 0
         self.val_ner_acc = 0
         self.test_ner_acc = 0
 
@@ -53,13 +53,13 @@ class DatasetExtractionModule(LightningModule):
 
         loss = outputs[0]
         ner_output = outputs[1]
-        cla_output = outputs[2]
+        cls_output = outputs[2]
 
-        return loss, ner_output, cla_output, batch_tags, batch_labels
+        return loss, ner_output, cls_output, batch_tags, batch_labels
 
 
     def training_step(self, batch: Any, batch_idx: int):
-        loss, ner_output, cla_output, batch_tags, batch_labels = self.step(batch)
+        loss, ner_output, cls_output, batch_tags, batch_labels = self.step(batch)
         self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
         return {"loss": loss}
 
@@ -69,8 +69,8 @@ class DatasetExtractionModule(LightningModule):
 
 
     def validation_step(self, batch: Any, batch_idx: int):
-        loss, ner_output, cla_output, batch_tags, batch_labels = self.step(batch)
-        pred_tags, true_tags, pred_labels, true_labels = self.data_utils.postprocess(ner_output, cla_output, batch_tags, batch_labels)
+        loss, ner_output, cls_output, batch_tags, batch_labels = self.step(batch)
+        pred_tags, true_tags, pred_labels, true_labels = self.data_utils.postprocess(ner_output, cls_output, batch_tags, batch_labels)
         self.val_f1 = f1_score(true_tags, pred_tags, mode='strict', scheme=IOB2)
 
         self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
@@ -90,13 +90,13 @@ class DatasetExtractionModule(LightningModule):
             true_labels.extend(output["true_labels"])
 
         self.val_f1 = f1_score(true_tags, pred_tags, mode='strict', scheme=IOB2)
-        self.val_cla_f1 = sklearn.metrics.f1_score(true_labels, pred_labels)
-        self.val_cla_acc = accuracy_score(true_labels, pred_labels)
+        self.val_cls_f1 = sklearn.metrics.f1_score(true_labels, pred_labels)
+        self.val_cls_acc = accuracy_score(true_labels, pred_labels)
         self.val_ner_acc = accuracy_score(true_tags, pred_tags)
 
         self.log("val/f1", self.val_f1, on_epoch=True, prog_bar=True)
-        self.log("val/cla_f1", self.val_cla_f1, on_epoch=True, prog_bar=True)
-        self.log("val/cla_acc", self.val_cla_acc, on_epoch=True, prog_bar=True)
+        self.log("val/cls_f1", self.val_cls_f1, on_epoch=True, prog_bar=True)
+        self.log("val/cls_acc", self.val_cls_acc, on_epoch=True, prog_bar=True)
 
         if self.val_f1 > self.val_f1_best:
             print(f"The f1 on validation set: {self.val_f1:.3f}, higher than the previous best one {self.val_f1_best:.3f}")
@@ -106,13 +106,13 @@ class DatasetExtractionModule(LightningModule):
         else:
             print(f"Epoch: {self.current_epoch}: No improvement! The current best model is still the best.")
         self.log("val/f1_best", self.val_f1_best, on_epoch=True, prog_bar=True)
-        print("Epoch:", self.current_epoch, ", val/f1:", self.val_f1, ", val/ner_acc:", self.val_ner_acc, ", val/cla_f1:", self.val_cla_f1, ", val/cla_acc:", self.val_cla_acc, ", val/best_f1:", self.val_f1_best)
+        print("Epoch:", self.current_epoch, ", val/f1:", self.val_f1, ", val/ner_acc:", self.val_ner_acc, ", val/cls_f1:", self.val_cls_f1, ", val/cls_acc:", self.val_cls_acc, ", val/best_f1:", self.val_f1_best)
         print(classification_report(true_tags, pred_tags, mode='strict', scheme=IOB2))
 
 
     def test_step(self, batch: Any, batch_idx: int):
-        loss, ner_output, cla_output, batch_tags, batch_labels = self.step(batch)
-        pred_tags, true_tags, pred_labels, true_labels = self.data_utils.postprocess(ner_output, cla_output, batch_tags, batch_labels)
+        loss, ner_output, cls_output, batch_tags, batch_labels = self.step(batch)
+        pred_tags, true_tags, pred_labels, true_labels = self.data_utils.postprocess(ner_output, cls_output, batch_tags, batch_labels)
         self.test_f1 = f1_score(true_tags, pred_tags, mode='strict', scheme=IOB2)
 
         self.log("test/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
@@ -134,23 +134,23 @@ class DatasetExtractionModule(LightningModule):
 
         self.test_f1 = f1_score(true_tags, pred_tags, mode='strict', scheme=IOB2)
         self.test_ner_acc = accuracy_score(true_tags, pred_tags)
-        self.test_cla_f1 = sklearn.metrics.f1_score(true_labels, pred_labels)
-        self.test_cla_acc = accuracy_score(true_labels, pred_labels)
+        self.test_cls_f1 = sklearn.metrics.f1_score(true_labels, pred_labels)
+        self.test_cls_acc = accuracy_score(true_labels, pred_labels)
 
         self.log("test/f1", self.test_f1, on_epoch=True, prog_bar=True)
         self.log("test/ner_acc", self.test_ner_acc, on_epoch=True, prog_bar=True)
-        self.log("test/cla_f1", self.test_cla_f1, on_epoch=True, prog_bar=True)
-        self.log("test/cla_acc", self.test_cla_acc, on_epoch=True, prog_bar=True)
+        self.log("test/cls_f1", self.test_cls_f1, on_epoch=True, prog_bar=True)
+        self.log("test/cls_acc", self.test_cls_acc, on_epoch=True, prog_bar=True)
         print(classification_report(true_tags, pred_tags, mode='strict', scheme=IOB2))
 
 
     def on_epoch_end(self):
-        self.val_cla_acc = 0
-        self.test_cla_acc = 0
+        self.val_cls_acc = 0
+        self.test_cls_acc = 0
         self.val_f1 = 0
         self.test_f1 = 0
-        self.val_cla_f1 = 0
-        self.test_cla_f1 = 0
+        self.val_cls_f1 = 0
+        self.test_cls_f1 = 0
         self.val_ner_acc = 0
         self.test_ner_acc = 0
 
