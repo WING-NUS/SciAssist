@@ -1,9 +1,11 @@
 import json
 import os
 import re
+import torch
+import numpy as np
+import nltk
 from typing import List, Tuple, Optional, Union, Dict
-
-from transformers import PreTrainedTokenizer
+from transformers import AutoTokenizer
 
 from SciAssist import BASE_OUTPUT_DIR, BASE_TEMP_DIR
 from SciAssist.pipelines.pipeline import Pipeline
@@ -58,8 +60,8 @@ class DatasetExtraction(Pipeline):
             cache_dir = None,
             output_dir = None,
             temp_dir = None,
-            tokenizer: PreTrainedTokenizer = None,
-            checkpoint = "roberta-base",
+            tokenizer = None,
+            checkpoint = "allenai/scibert_scivocab_uncased",
             model_max_length = 128,
             os_name = None,
     ):
@@ -67,15 +69,33 @@ class DatasetExtraction(Pipeline):
         super().__init__(task_name = "dataset-extraction", model_name = model_name, device = device,
                          cache_dir = cache_dir, output_dir = output_dir, temp_dir = temp_dir)
 
+        # print('load my model')
+        # self.model.load_state_dict(torch.load("/home/linxiao/SciAssist-scibert-0223/src/models/scibert_ner/2023-02-27_10-40-00/roberta-base"))
+        # self.model.load_state_dict(torch.load("/home/linxiao/SciAssist-scibert-0223/src/models/scibert_ner/2023-03-24_16-57-27/roberta-base"))
+        
+        # print('ok')
+
         self.data_utils = self.data_utils(
             tokenizer = tokenizer,
             checkpoint = checkpoint,
             model_max_length = model_max_length
         )
+
+        self.tokenizer = self.data_utils.tokenizer
+
         self.os_name = os_name if os_name != None else os.name
 
+        nltk.download('punkt')
 
-    def predict(
+    def _to_device(self, batch):
+        if self.model_name in ["default"]:
+            return {
+                "input_subwords": batch['input_subwords'].to(self.device),
+                "input_token_start_indexs": batch['input_token_start_indexs'].to(self.device),
+                "attention_mask": batch["attention_mask"].to(self.device),
+            }
+
+    def extract(
             self, input, type: str = "pdf",
             output_dir = None,
             temp_dir = None,
@@ -126,11 +146,11 @@ class DatasetExtraction(Pipeline):
             temp_dir = self.temp_dir
 
         if type in ["str", "string"]:
-            results = self._predict_for_string(example=input)
+            results = self._extract_for_string(example=input)
         elif type in ["txt", "text"]:
-            results = self._predict_for_text(filename=input)
+            results = self._extract_for_text(filename=input)
         elif type == "pdf":
-            results = self._predict_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir)
+            results = self._extract_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir)
 
         # Save predicted results as a text file
         if save_results and type not in ["str", "string"]:
@@ -142,7 +162,7 @@ class DatasetExtraction(Pipeline):
         return results
 
 
-    def _predict(
+    def _extract(
             self,
             examples: List[str]
     ):
@@ -161,30 +181,34 @@ class DatasetExtraction(Pipeline):
         results = {}
 
         dataset_mentions = []
+        dataset_set = set()
         dataset = {'data':{'text': examples}}
         dataloader = self.data_utils.get_dataloader(dataset)
 
         pred_output = []
         for batch in dataloader:
+            batch = self._to_device(batch)
             batch_output = self.model(**batch)
             ner_output = batch_output[0]
             ner_output = ner_output.detach().cpu().numpy()
             pred_output.extend([[idx for idx in indices] for indices in np.argmax(ner_output, axis=2)]) # pred_output: List[List[tag_idx]] num_sentences * each_sentence_length
 
         for i, sentence in enumerate(pred_output): # for each sentence
-            entity_indexes = self.find_entity_idx(sentence) # List of entity_index pairs: [[2,2],[5,9],[16,21]]
+            entity_indexes = self.find_entity_indexes(sentence) # List of entity_index pairs: [[2,2],[5,9],[16,21]]
             if len(entity_indexes) != 0:
                 tokens = examples[i].strip().split(' ')
                 entities = self.find_entities(entity_indexes, tokens) # List of mentions in this sentence
+                dataset_set.update(entities)
                 dataset_mentions.append([entities, examples[i]]) # [[List of mentions in sentence1, sentence1], [List of mentions in sentence2, sentence2], ...]
 
+        results['all_dataset_mentions'] = list(dataset_set)
         results['dataset_mentions'] = dataset_mentions
         results['text'] = examples
 
         return results
 
 
-    def _predict_for_string(
+    def _extract_for_string(
             self,
             example: Union[str, List[str]]
     ):
@@ -205,12 +229,12 @@ class DatasetExtraction(Pipeline):
         else:
             examples = [example]
 
-        results = self._predict(examples)
+        results = self._extract(examples)
 
         return results
 
 
-    def _predict_for_text(
+    def _extract_for_text(
             self,
             filename: str
     ):
@@ -228,15 +252,17 @@ class DatasetExtraction(Pipeline):
 
         with open(filename, "r") as f:
             text = f.readlines()
-            sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', text[0])
+            sentences = []
+            for i in text:
+                sentences.append(i.strip())
         f.close()
 
-        results = self._predict(sentences)
+        results = self._extract(sentences)
 
         return results
 
 
-    def _predict_for_pdf(
+    def _extract_for_pdf(
             self,
             filename: str,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
@@ -267,20 +293,21 @@ class DatasetExtraction(Pipeline):
 
         with open(text_file, "r") as f:
             text = f.readlines()
-            sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', text[0])
+            sentences = nltk.sent_tokenize(text[0])
         f.close()
 
-        results = self._predict(sentences)
+        results = self._extract(sentences)
 
         return results
 
 
     def find_entity_indexes(self, lst):
+        # {0: 'B-DATA', 1: 'I-DATA', 2: 'O'}
         indexes = []
         i = 0
         for i in range(len(lst)):
             tmp = []
-            if lst[i] == 2:
+            if lst[i] == 0:
                 tmp = [i,i]
                 j = i
                 while j < len(lst):

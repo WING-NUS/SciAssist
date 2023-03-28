@@ -247,13 +247,15 @@ class DataUtilsForDatasetExtraction():
         Returns:
             `DataLoader`: A dataloader for the dataset. Will be used for inference.
         """
-        tokenized_dataset = tokenize_and_align_labels(dataset)
+        tokenized_dataset = self.tokenize_and_align_labels(dataset)
 
         dataloader = DataLoader(
             dataset=tokenized_dataset,
             batch_size=32,
             collate_fn=tokenized_dataset.collate_fn,
         )
+
+        return dataloader
 
 
 class DataUtilsForSeq2Seq():
