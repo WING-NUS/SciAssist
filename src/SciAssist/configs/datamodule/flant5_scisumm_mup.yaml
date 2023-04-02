@@ -1,7 +1,7 @@
-_target_: SciAssist.datamodules.mup_datamodule.MupDataModule
+_target_: SciAssist.datamodules.mup_scisumm_datamodule.MupSciSummDataModule
 
 data_repo: "allenai/mup"
-train_batch_size: 2
+train_batch_size: 4
 num_workers: 0
 pin_memory: False
 data_cache_dir:  ${paths.data_dir}/mup/

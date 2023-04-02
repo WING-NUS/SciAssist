@@ -7,7 +7,6 @@ from datasets import Dataset, DatasetDict
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
-from SciAssist.utils.data_reader import csv_reader
 from SciAssist.utils.data_utils import DataUtilsForSeq2Seq
 
 
@@ -39,7 +38,7 @@ class MupDataModule(LightningDataModule):
         )
 
         # Get test from csv
-        raw_datasets["test"] = csv_reader("data/mup/test-release.csv")
+        # raw_datasets["test"] = csv_reader("data/mup/test-release.csv")
         return raw_datasets
 
     def setup(self, stage: Optional[str] = None):
