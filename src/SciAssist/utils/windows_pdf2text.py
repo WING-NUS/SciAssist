@@ -13,6 +13,8 @@ def process_pdf(path):
         "body_text":[],
         "reference":[]
     }
+    print(path)
+    fp = open(path, 'rb')
     for page_layout in extract_pages(path):
         for element in page_layout:
             if "get_text" in dir(element):
@@ -20,7 +22,7 @@ def process_pdf(path):
                 text = text.strip()
                 if text.isdigit() == False and text != "":
                     raw_text.append(text)
-
+    fp.close()
     res["title"] = raw_text[0]
 
     i = 1 # the index of the current text in raw_text

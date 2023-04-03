@@ -57,21 +57,56 @@ def get_text_by_section(json_file: str, section: List, output_dir: str = BASE_OU
     output_path = os.path.join(output_dir, os.path.basename(json_file)[:-5] + suffix + ".txt")
     strings_file = open(output_path,"w")
 
-    section = section.lower()
+    section = [s.lower() for s in section]
     with open(json_file,'r') as f:
         data = json.load(f)
         for context in data["pdf_parse"]["body_text"]:
             sent = context["text"]
-            if sent != "" and context["section"].lower() in section:
-                sent = nltk.word_tokenize(sent)
-                strings_file.write(" ".join(sent))
-                strings_file.write(" ")
-            else:
-                break
+            for j in section:
+                if sent != "" and j in context["section"].lower():
+                    sent = nltk.word_tokenize(sent)
+                    strings_file.write(" ".join(sent))
+                    strings_file.write(" ")
+                else:
+                    continue
 
     strings_file.close()
     return output_path
 
+def get_IC(json_file: str, output_dir: str = BASE_OUTPUT_DIR, suffix=None):
+    os.makedirs(output_dir, exist_ok=True)
+    section=["Introduction","Conclusion"]
+    assert json_file[-4:] == "json"
+    if suffix is None:
+        suffix = "_" + "_".join(section)
+    output_path = os.path.join(output_dir, os.path.basename(json_file)[:-5] + suffix + ".txt")
+    strings_file = open(output_path,"w")
+    res=[]
+    section = [s.lower() for s in section]
+    flag=0
+    with open(json_file,'r') as f:
+        data = json.load(f)
+        for context in data["pdf_parse"]["body_text"]:
+            sent = context["text"]
+            for j in section:
+                if sent != "" and j in context["section"].lower():
+                    if j=="introduction":
+                        flag=1
+                    sent = nltk.word_tokenize(sent)
+                    res.extend(sent)
+                else:
+                    continue
+        if flag==0:
+            res=[]
+            for context in data["pdf_parse"]["body_text"]:
+                sent = context["text"]
+                if sent != "":
+                    sent = nltk.word_tokenize(sent)
+                    res.extend(sent)
+    strings_file.write(" ".join(res[:800]))
+    strings_file.write(" ")
+    strings_file.close()
+    return output_path
 
 
 if __name__ == "__main__":
