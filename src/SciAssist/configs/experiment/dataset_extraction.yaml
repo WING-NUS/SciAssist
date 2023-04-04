@@ -31,7 +31,7 @@ module:
     cache_dir: ${paths.root_dir}/.cache/
 
 datamodule:
-  data_repo: "copy"
+  data_repo: "data"
   train_batch_size: 32
   num_workers: 0
   pin_memory: False
