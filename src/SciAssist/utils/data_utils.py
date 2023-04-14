@@ -1,9 +1,10 @@
 from typing import List, Dict
 
+import os
 import nltk
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from transformers import AutoTokenizer
 from transformers import DataCollatorForSeq2Seq
 
@@ -11,6 +12,251 @@ from SciAssist import BASE_CACHE_DIR
 from SciAssist.datamodules.components.cora_label import label2id as cora_label2id
 from SciAssist.models.components.bart_summarization import BartForSummarization
 from SciAssist.models.components.flant5_summarization import FlanT5ForSummarization
+
+
+class MyDatasetExtraction(Dataset):
+    def __init__(self, tokenizer, dataset, token_pad_idx = 0, tag_pad_idx = -1):
+        self.batch_size = 32
+        self.max_len = 128
+        self.token_pad_idx = token_pad_idx
+        self.tag_pad_idx = tag_pad_idx
+        self.tag2idx = {'B-DATA': 0, 'I-DATA': 1, 'O': 2}
+        self.idx2tag = {0: 'B-DATA', 1: 'I-DATA', 2: 'O'}
+        self.tokenizer = tokenizer
+        self.dataset = self.preprocess(dataset)
+
+     
+    def __len__(self):
+        """get dataset size"""
+        return self.dataset['size']
+ 
+
+    def __getitem__(self, idx):
+        """sample data to get batch"""
+        sentences = self.dataset['data'][idx]
+
+        if 'labels' in self.dataset.keys():
+            labels = self.dataset['labels'][idx]
+            tags = self.dataset['tags'][idx]
+            return [sentences, labels, tags]
+        else:
+            return [sentences]
+
+
+    def preprocess(self, dataset):
+        """Loads sentences and tags from their corresponding files. 
+            Maps tokens and tags to their indices and stores them in the provided dict d.
+        """
+        processed_dataset = {}
+        sentences = []
+        if 'labels' in dataset.keys():
+            labels = []
+            tags = []
+
+        for line in dataset['data']['text']:
+            # replace each token by its index
+            tokens = line.strip().split(' ')
+            # print(tokens)
+            subwords = list(map(self.tokenizer.tokenize, tokens)) # 每个词切分成子词
+            # print(subwords)
+            subword_lengths = list(map(len, subwords)) # 记录子词的长度，用于对齐tag
+            # print(subword_lengths)
+            subwords = ['[CLS]'] + [item for indices in subwords for item in indices]
+            # subwords = ['<s>'] + [item for indices in subwords for item in indices] # 组成输入 token
+            # print(subwords)
+            token_start_idxs = 1 + np.cumsum([0] + subword_lengths[:-1]) # 记录每个token开始的位置
+            # print(token_start_idxs)
+            # print(self.tokenizer.convert_tokens_to_ids(subwords), token_start_idxs)
+            sentences.append((self.tokenizer.convert_tokens_to_ids(subwords), token_start_idxs))
+
+        if 'labels' in dataset.keys():
+            for line in dataset['labels']['text']:
+                labels.append(int(line.strip()))
+            assert len(sentences) == len(labels)
+            processed_dataset['labels'] = labels
+
+            for line in dataset['tags']['text']:
+                # replace each tag by its index
+                tag_seq = [self.tag2idx.get(tag) for tag in line.strip().split(' ')]
+                tags.append(tag_seq)
+            # checks to ensure there is a tag for each token
+            assert len(sentences) == len(tags)
+            for i in range(len(sentences)):
+                assert len(tags[i]) == len(sentences[i][-1])
+            processed_dataset['tags'] = tags
+
+        processed_dataset['data'] = sentences
+        processed_dataset['size'] = len(sentences)
+
+        return processed_dataset
+
+
+    def collate_fn(self, batch):
+        sentences = [x[0] for x in batch]
+        processed_batch = {}
+        if len(batch[0]) == 3:
+            labels = [x[1] for x in batch]
+            tags = [x[2] for x in batch]
+
+        # batch length
+        batch_len = len(sentences)  # batch size
+        batch_max_subwords_len = max([len(s[0]) for s in sentences])
+        max_subword_len = min(batch_max_subwords_len, self.max_len)
+        max_token_len = 0
+ 
+        # padding data 初始化
+        batch_data = self.token_pad_idx * np.ones((batch_len, max_subword_len))
+        batch_token_starts = []
+ 
+        # padding and aligning
+        for j in range(batch_len):
+            cur_subwords_len = len(sentences[j][0])  # word_id list
+            if cur_subwords_len <= max_subword_len:
+                batch_data[j][:cur_subwords_len] = sentences[j][0]
+            else:
+                batch_data[j] = sentences[j][0][:max_subword_len]
+            token_start_ids = sentences[j][-1]
+            token_starts = np.zeros(max_subword_len)
+            token_starts[[idx for idx in token_start_ids if idx < max_subword_len]] = 1
+            batch_token_starts.append(token_starts)
+            max_token_len = max(int(sum(token_starts)), max_token_len)
+
+        processed_batch['input_subwords'] = torch.tensor(batch_data, dtype = torch.long)
+        processed_batch['input_token_start_indexs'] = torch.tensor(np.array(batch_token_starts), dtype = torch.long)
+        # processed_batch['attention_mask'] = (processed_batch['input_subwords'] != 1)
+        processed_batch['attention_mask'] = processed_batch['input_subwords'].gt(0)
+
+        if len(batch[0]) == 3:
+            batch_tags = self.tag_pad_idx * np.ones((batch_len, max_token_len))
+            batch_labels = np.ones((batch_len, ))
+            for j in range(batch_len):
+                batch_labels[j] = labels[j]
+                cur_tags_len = len(tags[j])
+                if cur_tags_len <= max_token_len:
+                    batch_tags[j][:cur_tags_len] = tags[j]
+                else:
+                    batch_tags[j] = tags[j][:max_token_len]
+            processed_batch['ner_tags'] = torch.tensor(np.array(batch_tags), dtype = torch.long)
+            processed_batch['cls_labels'] = torch.tensor(np.array(batch_labels), dtype = torch.long)
+
+        return processed_batch
+
+
+class DataUtilsForDatasetExtraction():
+    """
+
+    Args:
+        tokenizer (`PretrainedTokenizer`, default to None):
+            The tokenizer for tokenization.
+        checkpoint (`str`):
+            The checkpoint from which the tokenizer is loaded.
+        model_max_length (`int`, *optional*): The max sequence length the model accepts.
+        max_source_length (`int`, *optional*): The max length of the input text.
+        max_target_length (`int`, *optional*): The max length of the generated summary.
+    """
+    def __init__(self, tokenizer = None,
+                 checkpoint = "allenai/scibert_scivocab_uncased",
+                 model_max_length = 128
+                 ):
+
+        self.checkpoint = checkpoint
+        self.model_max_length = model_max_length
+
+        if tokenizer is None:
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.checkpoint,
+                model_max_length = self.model_max_length,
+                cache_dir=BASE_CACHE_DIR,
+                use_fast=True
+            )
+        else:
+            self.tokenizer = tokenizer
+
+        self.tag2idx = {'B-DATA': 0, 'I-DATA': 1, 'O': 2}
+        self.idx2tag = {0: 'B-DATA', 1: 'I-DATA', 2: 'O'}
+
+
+    def tokenize_and_align_labels(self, dataset):
+
+        """
+
+        Process the dataset for model input, for example, do tokenization and prepare label_ids.
+
+        Args:
+            dataset (`Dataset`): { "text": [s1, s2, ...], "summary": [l1, l2, ...]}
+            inputs (`str`): The name of input column
+            labels (`str`): The name of target column
+
+        Returns:
+            `Dict`: {"input_ids": input_ids, "attention_mask": attention_mask, "labels": label_ids }
+
+        """
+        
+        """Loads sentences and tags from their corresponding files.
+            Maps tokens and tags to their indices and stores them in the provided dict d.
+        """
+        processed_dataset = MyDatasetExtraction(self.tokenizer, dataset)
+
+        return processed_dataset
+
+
+    def postprocess(self, ner_output, cls_output, batch_tags, batch_labels):
+
+        """
+        Process model's outputs and get the final results rather than simple ids.
+
+        Args:
+            preds (Tensor): Prediction labels, the output of the model.
+            labels (Tensor): True labels
+
+        Returns:
+            `(LongTensor, LongTensor)`: decoded_preds, decoded_labels
+
+        """
+        pred_tags = []
+        true_tags = []
+        pred_labels = []
+        true_labels = []
+
+        ner_output = ner_output.detach().cpu().numpy()
+        cls_output = cls_output.detach().cpu().numpy()
+        batch_tags = batch_tags.to('cpu').numpy()
+        batch_labels = batch_labels.to('cpu').numpy()
+
+        pred_tags.extend([[self.idx2tag.get(idx) for idx in indices] for indices in np.argmax(ner_output, axis=2)])
+        true_tags.extend([[self.idx2tag.get(idx) if idx != -1 else 'O' for idx in indices] for indices in batch_tags])
+        true_labels.extend(batch_labels)
+
+        pred_labels.extend(cls_output)
+        pred_labels = np.argmax(pred_labels, axis=1)
+
+        assert len(pred_tags) == len(true_tags)
+
+        return pred_tags, true_tags, pred_labels, true_labels
+
+
+    def get_dataloader(self, dataset):
+
+        """
+        Generate DataLoader for a dataset.
+
+        Args:
+            dataset (`Dataset`): The raw dataset.
+            inputs_column (`str`): Column name of the inputs.
+            labels_column (`str`): Column name of the labels.
+
+        Returns:
+            `DataLoader`: A dataloader for the dataset. Will be used for inference.
+        """
+        tokenized_dataset = self.tokenize_and_align_labels(dataset)
+
+        dataloader = DataLoader(
+            dataset=tokenized_dataset,
+            batch_size=32,
+            collate_fn=tokenized_dataset.collate_fn,
+        )
+
+        return dataloader
 
 
 class DataUtilsForSeq2Seq():
