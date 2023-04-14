@@ -1,0 +1,9 @@
+_target_: SciAssist.datamodules.dataset_extraction_datamodule.DatasetExtractionModule
+
+data_repo: "data"
+train_batch_size: 32
+num_workers: 0
+pin_memory: False
+data_cache_dir:  ${paths.data_dir}/ner/
+data_utils:
+  _target_: SciAssist.utils.data_utils.DataUtilsForDatasetExtraction
