@@ -64,7 +64,7 @@ TASKS = {
     "dataset-extraction": {
         "default": {
             "model": BertForDatasetExtraction,
-            "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/dataset-extraction.pt",
+            "model_dict_url": "https://huggingface.co/spaces/kirinzhu/SciAssist/resolve/main/dataset_extraction.pt",
             "data_utils": DataUtilsForDatasetExtraction,
         },
     },
