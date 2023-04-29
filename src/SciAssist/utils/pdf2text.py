@@ -108,6 +108,25 @@ def get_IC(json_file: str, output_dir: str = BASE_OUTPUT_DIR, suffix=None):
     strings_file.close()
     return output_path
 
+def get_abs(json_file: str, output_dir: str = BASE_OUTPUT_DIR, suffix="_abs"):
+
+    os.makedirs(output_dir, exist_ok=True)
+    assert json_file[-4:] == "json"
+    output_path = os.path.join(output_dir,os.path.basename(json_file)[:-5]+ suffix + ".txt")
+
+    strings_file = open(output_path,"w")
+
+    with open(json_file,'r') as f:
+        data = json.load(f)
+        for context in data["pdf_parse"]["abstract"]:
+            sent = context["text"]
+            if sent != "":
+                sent = nltk.word_tokenize(sent)
+                strings_file.write(" ".join(sent))
+                strings_file.write(" ")
+
+    strings_file.close()
+    return output_path
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extracting strings from JSON")
