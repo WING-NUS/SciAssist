@@ -28,19 +28,19 @@ def process_pdf(path):
     i = 1 # the index of the current text in raw_text
 
     while i<len(raw_text):
-        if raw_text[i] in ["abstract","Abstract", "ABSTRACT"]:
+        if raw_text[i].replace(" ","") in ["abstract","Abstract", "ABSTRACT"]:
             i += 1
             break
         res["author"].append(raw_text[i])
         i += 1
 
     while i<len(raw_text):
-        if "Introduction" in raw_text[i] or "INTRODUCTION" in raw_text[i]:
+        if raw_text[i][:2] in ["1 ", "1."]:
             break
         i += 1
 
     while i<len(raw_text):
-        if raw_text[i] in ["References","Reference", "REFERENCE", "REFERENCES"]:
+        if raw_text[i].replace(" ","") in ["References","Reference", "REFERENCE", "REFERENCES"]:
             i += 1
             break
         res["body_text"].append(raw_text[i])
@@ -52,7 +52,6 @@ def process_pdf(path):
             break
         res["reference"].append(raw_text[i])
         i += 1
-
     return res
 
 
