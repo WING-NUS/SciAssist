@@ -52,26 +52,20 @@ class Summarization(Pipeline):
 
     def __init__(
             self, model_name: str = "default", device="gpu",
+            task_name = "controlled-summarization",
             cache_dir=None,
             output_dir=None,
             temp_dir=None,
             tokenizer=None,
-            checkpoint="facebook/bart-large-cnn",
+            checkpoint="google/flan-t5-base",
             model_max_length=1024,
             max_source_length=1024,
             max_target_length=500,
             os_name=None,
     ):
-        super().__init__(task_name="controlled-summarization", model_name=model_name, device=device,
+        super().__init__(task_name=task_name, model_name=model_name, device=device,
                          cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
-        # self.model.load_state_dict(
-        #     torch.load("/home/dingyx/project/SciAssist/src/pretrained/flant5_scisumm_mup/flant5-base-mix-mup-scisumm-keywords.pt"))
-        # self.model.load_state_dict(
-        #     torch.load("/home/yixi/project/sciassist/src/pretrained/flant5_mup/flant5-base-mup-scisumm-repeat10.pt")
-        # )
-        # self.model.load_state_dict(
-        #     torch.load("/home/yixi/project/sciassist/src/pretrained/flant5_mup/flant5-base.pt")
-        # )
+
         self.data_utils = self.data_utils(
             tokenizer=tokenizer,
             model_class=self.config["model"],
