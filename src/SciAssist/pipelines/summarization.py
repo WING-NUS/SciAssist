@@ -1,5 +1,6 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
 import json
+import math
 import os
 from typing import List, Tuple, Optional, Dict
 
@@ -7,6 +8,7 @@ from datasets import Dataset
 
 from SciAssist import BASE_TEMP_DIR, BASE_OUTPUT_DIR
 from SciAssist.pipelines.pipeline import Pipeline
+from SciAssist.pipelines.testing_pipeline import test
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 from SciAssist.utils.windows_pdf2text import windows_get_bodytext
 
@@ -50,17 +52,18 @@ class Summarization(Pipeline):
 
     def __init__(
             self, model_name: str = "default", device="gpu",
+            task_name = "controlled-summarization",
             cache_dir=None,
             output_dir=None,
             temp_dir=None,
             tokenizer=None,
-            checkpoint="facebook/bart-large-cnn",
+            checkpoint="google/flan-t5-base",
             model_max_length=1024,
             max_source_length=1024,
-            max_target_length=128,
+            max_target_length=500,
             os_name=None,
     ):
-        super().__init__(task_name="single-doc-summarization", model_name=model_name, device=device,
+        super().__init__(task_name=task_name, model_name=model_name, device=device,
                          cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
 
         self.data_utils = self.data_utils(
@@ -81,6 +84,8 @@ class Summarization(Pipeline):
             num_beams=1,
             num_return_sequences=1,
             save_results=True,
+            length = None,
+            keywords: List[str] = None
     ):
         """
 
@@ -138,13 +143,15 @@ class Summarization(Pipeline):
 
         if type in ["str", "string"]:
             results = self._summarize_for_string(example=input, num_beams=num_beams,
-                                                 num_return_sequences=num_return_sequences)
+                                                 num_return_sequences=num_return_sequences,length=length, keywords=keywords)
         elif type in ["txt", "text"]:
             results = self._summarize_for_text(filename=input, num_beams=num_beams,
-                                               num_return_sequences=num_return_sequences)
+                                               num_return_sequences=num_return_sequences,length=length, keywords=keywords)
         elif type == "pdf":
             results = self._summarize_for_pdf(filename=input, output_dir=output_dir, temp_dir=temp_dir,
-                                              num_beams=num_beams, num_return_sequences=num_return_sequences)
+                                              num_beams=num_beams, num_return_sequences=num_return_sequences,
+                                              length=length, keywords=keywords)
+
         # Save predicted results as a text file
         if save_results and type not in ["str", "string"]:
             os.makedirs(output_dir, exist_ok=True)
@@ -155,7 +162,7 @@ class Summarization(Pipeline):
         return results
 
     def _to_device(self, batch):
-        if self.model_name in ["default", "bart-cnn-on-mup"]:
+        if self.model_name in ["default", "bart-cnn-on-mup", "flan-t5", "t5"]:
             return {
                 "input_ids": batch["input_ids"].to(self.device),
                 "attention_mask": batch["attention_mask"].to(self.device),
@@ -165,7 +172,9 @@ class Summarization(Pipeline):
             self,
             examples: List[str],
             num_beams=1,
-            num_return_sequences=1
+            num_return_sequences=1,
+            length=100,
+            keywords=None
     ) -> List[str]:
         """
         Summarize each text in the list.
@@ -178,12 +187,11 @@ class Summarization(Pipeline):
         """
 
         # Prepare the dataset
-        dict_data = {"text": examples}
+        dict_data = {"text": examples, "length": [length]*len(examples), "keywords": [keywords]*len(examples) }
         dataset = Dataset.from_dict(dict_data)
 
         # Tokenize for Bart, get input_ids and attention_masks
         dataloader = self.data_utils.get_dataloader(dataset)
-
         results = []
         for batch in dataloader:
             batch = self._to_device(batch)
@@ -194,14 +202,15 @@ class Summarization(Pipeline):
             decoded_preds = self.tokenizer.batch_decode(pred, skip_special_tokens=True)
 
             results.extend(decoded_preds)
-
         return results
 
     def _summarize_for_string(
             self,
             example: str,
             num_beams=1,
-            num_return_sequences=1
+            num_return_sequences=1,
+            length=100,
+            keywords=None
     ) -> Tuple[str, str]:
 
         """
@@ -216,15 +225,21 @@ class Summarization(Pipeline):
                 Predicted summarization and source text.
 
         """
-        res = self._summarize([example], num_beams, num_return_sequences)
-
+        num = 10
+        res = self._summarize([example], num_beams, num_return_sequences,length=length, keywords=keywords)
+        if length is not None:
+            num = 5*math.ceil(length/50)
+        # if keywords is not None:
+        #     example = extract_related_sentences(example,keywords[0],num)
         return {"summary": res, "raw_text": example}
 
     def _summarize_for_text(
             self,
             filename: str,
             num_beams: int = 1,
-            num_return_sequences: int = 1
+            num_return_sequences: int = 1,
+            length=100,
+            keywords=None
     ) -> Tuple[str, str]:
         """
 
@@ -240,12 +255,15 @@ class Summarization(Pipeline):
                 Predicted summarization and source text.
 
         """
-
+        num = 10
+        if length is not None:
+            num = 5 * math.ceil(length / 50)
         with open(filename, "r") as f:
             examples = f.readlines()
         examples = [" ".join(examples)]
-        res = self._summarize(examples, num_beams, num_return_sequences)
-
+        res = self._summarize(examples, num_beams, num_return_sequences,length=length,keywords=keywords)
+        # if keywords is not None:
+        #     examples = [extract_related_sentences(examples[0], keywords[0],num)]
         return {"summary": res, "raw_text": examples[0]}
 
     def _summarize_for_pdf(
@@ -254,7 +272,9 @@ class Summarization(Pipeline):
             temp_dir: Optional[str] = BASE_TEMP_DIR,
             output_dir: Optional[str] = BASE_OUTPUT_DIR,
             num_beams: int = 1,
-            num_return_sequences=1
+            num_return_sequences=1,
+            length = 100,
+            keywords = None
     ) -> Dict:
         """
         Summarize a document from a PDF file.
@@ -278,4 +298,9 @@ class Summarization(Pipeline):
             text_file = windows_get_bodytext(path=filename, output_dir=output_dir)
 
         # Do summarization
-        return self._summarize_for_text(text_file, num_beams=num_beams, num_return_sequences=num_return_sequences)
+        return self._summarize_for_text(text_file, num_beams=num_beams, num_return_sequences=num_return_sequences, length=length, keywords=keywords)
+
+
+    def evaluate(self):
+
+        return test()

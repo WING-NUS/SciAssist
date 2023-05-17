@@ -5,12 +5,12 @@ from typing import Dict
 import torch
 
 from SciAssist import BASE_CACHE_DIR
-from SciAssist.models.components.bart_summarization import BartForSummarization
+from SciAssist.models.components.bert_dataset_extraction import BertForDatasetExtraction
 from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
 from SciAssist.models.components.flant5_summarization import FlanT5ForSummarization
-from SciAssist.models.components.bert_dataset_extraction import BertForDatasetExtraction
 from SciAssist.utils.data_utils import (
     DataUtilsForTokenClassification,
+    DataUtilsForFlanT5, DataUtilsForT5,
     DataUtilsForSeq2Seq,
     DataUtilsForDatasetExtraction
 )
@@ -31,23 +31,36 @@ TASKS = {
     },
 
     "single-doc-summarization": {
-        "bart-cnn-on-mup": {
-            "model": BartForSummarization,
-            "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/bart-large-cnn-e5.pt",
+        # "bart-cnn-on-mup": {
+        #     "model": FlanT5ForSummarization,
+        #     "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-mup-scisumm.pt",
+        #     "data_utils": DataUtilsForSeq2Seq,
+        # },
+        "default": {
+            "model": FlanT5ForSummarization,
+            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base.pt",
             "data_utils": DataUtilsForSeq2Seq,
         },
-        "default": {
-            "model": BartForSummarization,
-            "model_dict_url": "https://huggingface.co/spaces/wing-nus/SciAssist/resolve/main/bart-large-cnn-e5.pt",
-            "data_utils": DataUtilsForSeq2Seq,
+        "t5": {
+            "model": FlanT5ForSummarization,
+            "model_dict_url": None,
+            "data_utils": DataUtilsForT5,
         },
         "flan-t5": {
             "model": FlanT5ForSummarization,
-            "model_dict_url": None,
-            "data_utils": DataUtilsForSeq2Seq,
+            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base.pt",
+            "data_utils": DataUtilsForFlanT5,
         }
     },
 
+    "controlled-summarization": {
+        "default": {
+            "model": FlanT5ForSummarization,
+            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-mup-scisumm.pt",
+            # "model_dict_url": None,
+            "data_utils": DataUtilsForFlanT5,
+        }
+    },
     "dataset-extraction": {
         "default": {
             "model": BertForDatasetExtraction,
@@ -65,7 +78,6 @@ TASKS = {
     # }
 
 }
-
 
 def load_model(config: Dict, cache_dir=BASE_CACHE_DIR, device="gpu"):
     '''
