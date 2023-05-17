@@ -25,7 +25,6 @@ class BertForDatasetExtraction(nn.Module):
         self.cel = CrossEntropyLoss()
         self.ner_classifier = nn.Linear(self.bert.config.hidden_size, self.num_ner_tags)
         self.cls_classifier = nn.Linear(self.bert.config.hidden_size, self.num_cls_labels)
-        # self.init_weights()
 
     def forward(self, input_subwords, input_token_start_indexs, attention_mask=None, ner_tags=None, cls_labels=None):
         outputs = self.bert(input_subwords,
@@ -43,19 +42,17 @@ class BertForDatasetExtraction(nn.Module):
 
         ner_logits = self.ner_classifier(padded_sequence_output)
 
-        cls_logits = self.cls_classifier(sequence_output[:, 0, :]) # 分类任务
-        # cls_logits = self.cls_classifier(outputs[1]) # 分类任务
+        cls_logits = self.cls_classifier(sequence_output[:, 0, :])
 
         outputs = (ner_logits, cls_logits,)
 
         if ner_tags is not None:
-            alpha, beta = 1, 0 # alpha(0~1)控制两个任务的损失权重， beta控制额外引入的正则项
+            alpha = 0.3
             mask = ner_tags.gt(-1)
 
             loss_ner = self.crf(ner_logits, ner_tags, mask) * (-1)
             loss_cls = self.cel(cls_logits.view(-1, 2), cls_labels.view(-1))
-            loss_penalty = torch.mean((2 * torch.argmax(cls_logits, dim=-1) - 1.0) * torch.mean(ner_logits[:,:,-1], dim=-1))
-            loss = alpha * loss_ner + (1- alpha) * loss_cls + beta * loss_penalty
+            loss = alpha * loss_ner + (1- alpha) * loss_cls
 
             outputs = (loss,) + outputs
 

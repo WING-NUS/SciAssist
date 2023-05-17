@@ -11,7 +11,7 @@
 - Add examples for choosing devices in `Usage`.
 
 <div align="center">
-   
+
 # SciAssist
 [![PyPI Status](https://badge.fury.io/py/sciassist.svg)](https://badge.fury.io/py/sciassist)
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
@@ -54,6 +54,7 @@ run_grobid
 Here are some example usages.
 
 **Reference string parsing:**
+
 ```python
 from SciAssist import ReferenceStringParsing
 
@@ -73,6 +74,7 @@ res = ref_parser.predict("test.pdf")
 ```
 
 **Summarizarion for single document:**
+
 ```python
 from SciAssist import Summarization
 
@@ -102,7 +104,27 @@ res = summerizer.predict("raw.pdf")
 
 ```
 
+**Dataset mention extraction:**
+
+```python
+from SciAssist import DatasetExtraction
+
+# Set device="cpu" if you want to use only CPU. The default device is "gpu".
+# ref_parser = DatasetExtraction(device="cpu")
+extractor = DatasetExtraction(device="gpu")
+
+# For string
+res = extractor.extract("The impact of gender identity on emotions was examined by researchers using a subsample from the National Longitudinal Study of Adolescent Health. The study aimed to investigate the direct effects of gender identity on emotional experiences and expression. By focusing on a subsample of the larger study, the researchers were able to hone in on the specific relationship between gender identity and emotions. Through their analysis, the researchers sought to determine whether gender identity could have a significant and direct impact on emotional well-being. The findings of the study have important implications for our understanding of the complex interplay between gender identity and emotional experiences, and may help to inform future interventions and support for individuals who experience gender-related emotional distress.", type="str")
+# For text: please input the path of your .txt file
+res = extractor.extract("test.txt", type="txt")
+# For pdf: please input the path of your .pdf file
+res = extractor.predict("test.pdf", type="pdf")
+```
+
+
+
 ## Contribution
+
 Here's a simple introduction about how to incorporate a new task into SciAssist. 
 Generally, to add a new task, you will need to:
 
@@ -111,7 +133,7 @@ Generally, to add a new task, you will need to:
     3. Create a LightningModule and a DataLightningModule.
     4. Train a model.
     5. Provide a pipeline for users.
-    
+
 We provide a step-by-step contribution guide, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#).
 
 ## LICENSE
