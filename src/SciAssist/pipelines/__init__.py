@@ -10,8 +10,7 @@ from SciAssist.models.components.bert_token_classifier import BertForTokenClassi
 from SciAssist.models.components.flant5_summarization import FlanT5ForSummarization
 from SciAssist.utils.data_utils import (
     DataUtilsForTokenClassification,
-    DataUtilsForFlanT5, DataUtilsForT5,
-    DataUtilsForSeq2Seq,
+    DataUtilsForFlanT5, DataUtilsForSeq2Seq,
     DataUtilsForDatasetExtraction
 )
 
@@ -31,24 +30,14 @@ TASKS = {
     },
 
     "single-doc-summarization": {
-        # "bart-cnn-on-mup": {
-        #     "model": FlanT5ForSummarization,
-        #     "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-mup-scisumm.pt",
-        #     "data_utils": DataUtilsForSeq2Seq,
-        # },
         "default": {
             "model": FlanT5ForSummarization,
-            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base.pt",
+            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base-mup-scisumm-noctrl.pt",
             "data_utils": DataUtilsForSeq2Seq,
-        },
-        "t5": {
-            "model": FlanT5ForSummarization,
-            "model_dict_url": None,
-            "data_utils": DataUtilsForT5,
         },
         "flan-t5": {
             "model": FlanT5ForSummarization,
-            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base.pt",
+            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base-mup-scisumm-noctrl.pt",
             "data_utils": DataUtilsForFlanT5,
         }
     },
@@ -56,8 +45,7 @@ TASKS = {
     "controlled-summarization": {
         "default": {
             "model": FlanT5ForSummarization,
-            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-mup-scisumm.pt",
-            # "model_dict_url": None,
+            "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base-mup-scisumm-repeat5-kws.pt",
             "data_utils": DataUtilsForFlanT5,
         }
     },
@@ -68,14 +56,6 @@ TASKS = {
             "data_utils": DataUtilsForDatasetExtraction,
         },
     },
-
-    # "controlled-summarization": {
-    #     "default": {
-    #         "model": FrostForSummarization,
-    #         "model_dict_url": None,
-    #         "data_utils": DataUtilsForFrost,
-    #     }
-    # }
 
 }
 
@@ -98,8 +78,11 @@ def load_model(config: Dict, cache_dir=BASE_CACHE_DIR, device="gpu"):
     print("Loading the model...")
     model_class = config["model"]
     model = model_class(cache_dir=cache_dir)
-    map_location = None if torch.cuda.is_available() and device in ["gpu","cuda"] else torch.device("cpu")
+    map_location=None
+    if device == "cpu":
+        map_location = torch.device("cpu")
     if config["model_dict_url"]!=None:
+        map_location = config["map_location"] if "map_location" in config.keys() else map_location
         state_dict = torch.hub.load_state_dict_from_url(config["model_dict_url"], model_dir=cache_dir, map_location=map_location)
         model.load_state_dict(state_dict)
     else:

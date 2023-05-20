@@ -60,7 +60,7 @@ class Summarization(Pipeline):
             checkpoint="google/flan-t5-base",
             model_max_length=1024,
             max_source_length=1024,
-            max_target_length=500,
+            max_target_length=300,
             os_name=None,
     ):
         super().__init__(task_name=task_name, model_name=model_name, device=device,
@@ -81,7 +81,7 @@ class Summarization(Pipeline):
             self, input: str, type: str = "pdf",
             output_dir=None,
             temp_dir=None,
-            num_beams=5,
+            num_beams=1,
             num_return_sequences=1,
             save_results=True,
             length = None,
