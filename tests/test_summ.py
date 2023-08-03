@@ -9,7 +9,7 @@ from SciAssist import Summarization
 @pytest.fixture
 def BERTSummGrobid():
     res = []
-    with open("output/grobid/BERT_paper_summ.json","r",encoding="utf-8") as f:
+    with open("output/grobid/BERT_paper_summ_bart.json", "r", encoding="utf-8") as f:
         results = f.readlines()
         for i in results:
             r = i.replace("\n","")
@@ -19,7 +19,7 @@ def BERTSummGrobid():
 @pytest.fixture
 def BERTSummPDFMiner():
     res = []
-    with open("output/pdfminer-six/BERT_paper_summ.json","r",encoding="utf-8") as f:
+    with open("output/pdfminer-six/BERT_paper_summ_bart.json", "r", encoding="utf-8") as f:
         results = f.readlines()
         for i in results:
             r = i.replace("\n", "")

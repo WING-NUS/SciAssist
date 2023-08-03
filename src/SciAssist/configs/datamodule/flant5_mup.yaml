@@ -1,0 +1,13 @@
+_target_: SciAssist.datamodules.mup_datamodule.MupDataModule
+
+data_repo: "allenai/mup"
+train_batch_size: 2
+num_workers: 0
+pin_memory: False
+data_cache_dir:  ${paths.data_dir}/mup/
+data_utils:
+  _target_: SciAssist.utils.data_utils.DataUtilsForFlanT5
+  checkpoint: "google/flan-t5-base"
+  model_max_length: 1024
+  max_source_length: 1024
+  prompt: "Please give a summary of the following text "

@@ -9,7 +9,7 @@ from SciAssist import ReferenceStringParsing
 @pytest.fixture
 def BERTRspGrobid():
     res = []
-    with open("output/grobid/BERT_paper_rsp.json", "r", encoding="utf-8") as f:
+    with open("output/grobid/BERT_paper_rsp_scibert.json", "r", encoding="utf-8") as f:
         results = f.readlines()
         for i in results:
             r = i.replace("\n","")
@@ -20,7 +20,7 @@ def BERTRspGrobid():
 @pytest.fixture
 def BERTRspPDFMiner():
     res = []
-    with open("output/pdfminer-six/BERT_paper_rsp.json", "r", encoding="utf-8") as f:
+    with open("output/pdfminer-six/BERT_paper_rsp_scibert.json", "r", encoding="utf-8") as f:
         results = f.readlines()
         for i in results:
             r = i.replace("\n","")

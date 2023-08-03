@@ -91,8 +91,9 @@ Reference string parsing
     
 
 
-Single document summarization 
+Controlled Summarization(CoCoSciSum)
 """""""""""""""""""""""""""""
+
 
 .. _Summarization:
 
