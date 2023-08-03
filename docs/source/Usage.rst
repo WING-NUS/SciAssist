@@ -91,7 +91,7 @@ Reference string parsing
     
 
 
-Single document summarization 
+Comntrolled summarization 
 """""""""""""""""""""""""""""
 
 .. _Summarization:
