@@ -91,10 +91,10 @@ Reference string parsing
     
 
 
-Single document summarization 
+Controlled Summarization(CoCoSciSum)
 """""""""""""""""""""""""""""
 
-.. _Summarization:
+.. _ControlledSummarization:
 
 .. autoclass:: SciAssist.Summarization
     :members: predict

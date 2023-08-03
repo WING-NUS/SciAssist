@@ -84,7 +84,7 @@ class Summarization(Pipeline):
             num_beams=1,
             num_return_sequences=1,
             save_results=True,
-            length = None,
+            length=100,
             keywords: List[str] = None
     ):
         """
@@ -115,11 +115,16 @@ class Summarization(Pipeline):
             num_beams (`int`, *optional*):
                 Number of beams for beam search. 1 means no beam search.
                 `num_beams` should be divisible by `num_return_sequences` for group beam search.
-            num_return_sequences(`int`):
+            num_return_sequences(`int`,  *optional*):
                 The number of independently computed returned sequences for each element in the batch.
             save_results (`bool`, default to `True`):
                 Whether to save the results in a *.json* file.
                 **Note**: This is invalid when `type` is set to `str` or `string`.
+            length(`int`, default to `100`):
+                The expected number of words in the summary. The value should be in [50, 100, 150, 200, 250] to ensure the controllability.
+            keywords(`List[str]`, default to None):
+                The keywords you want to appear in thee summary.
+
 
         Returns:
             `Dict`: { "summary": [summary1, summary2, ...], "raw_text": raw_text }
@@ -128,11 +133,10 @@ class Summarization(Pipeline):
         Examples:
 
              >>> from SciAssist import Summarization
-             >>> pipeline = Summarization()
-             >>> res = pipeline.predict('N18-3011.pdf', type="pdf", num_beams=4, num_return_sequences=2)
+             >>> summarizer = Summarization()
+             >>> res = summarizer.predict('Bert_paper.pdf', type="pdf", length=50, keywords=["Cloze task"])
              >>> res["summary"]
-             ['The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction. ',
-             'The paper proposes a method for extracting structured information from scientific documents into the literature graph. The paper describes the attributes associated with nodes and edges of different types in the graph, and describes how to extract the entities mentioned in paper text. The method is evaluated on three tasks: sequence labeling, entity linking and relation extraction.  ']
+             ['This paper proposes a bidirectional pre-training method for language representations. The method is inspired by the Cloze task. The method is evaluated on a large suite of sentence-level and token-level tasks.']
 
         """
 
