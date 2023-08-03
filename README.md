@@ -42,14 +42,14 @@ run_grobid
 
 Here are some example usages.
 
-
-
 **Controlled Summarization:**
+
 
 ```python
 from SciAssist import Summarization
 
 # Set device="cpu" if you want to use only CPU. The default device is "gpu".
+
 # summerizer = Summarization(device="cpu")
 summerizer = Summarization(device="gpu")
 
@@ -133,6 +133,34 @@ res = extractor.predict("test.pdf", type="pdf")
 ```
 
 
+
+## Contribution
+
+
+# pipleine = Summarization(device="cpu")
+summerizer = Summarization(device="gpu")
+
+text = """1 INTRODUCTION . Statistical learning theory studies the learning properties of machine learning algorithms , and more fundamentally , the conditions under which learning from finite data is possible . 
+In this context , classical learning theory focuses on the size of the hypothesis space in terms of different complexity measures , such as combinatorial dimensions , covering numbers and Rademacher/Gaussian complexities ( Shalev-Shwartz & Ben-David , 2014 ; Boucheron et al. , 2005 ) . 
+Another more recent approach is based on defining suitable notions of stability with respect to perturbation of the data ( Bousquet & Elisseeff , 2001 ; Kutin & Niyogi , 2002 ) . 
+In this view , the continuity of the process that maps data to estimators is crucial , rather than the complexity of the hypothesis space . 
+Different notions of stability can be considered , depending on the data perturbation and metric considered ( Kutin & Niyogi , 2002 ) . 
+Interestingly , the stability and complexity approaches to characterizing the learnability of problems are not at odds with each other , and can be shown to be equivalent as shown in Poggio et al . ( 2004 ) and Shalev-Shwartz et al . ( 2010 ) . 
+In modern machine learning overparameterized models , with a larger number of parameters than the size of the training data , have become common . 
+The ability of these models to generalize is well explained by classical statistical learning theory as long as some form of regularization is used in the training process ( Bühlmann & Van De Geer , 2011 ; Steinwart & Christmann , 2008 ) . 
+However , it was recently shown - first for deep networks ( Zhang et al. , 2017 ) , and more recently for kernel methods ( Belkin et al. , 2019 ) - that learning is possible in the absence of regularization , i.e. , when perfectly fitting/interpolating the data . 
+Much recent work in statistical learning theory has tried to find theoretical ground for this empirical finding . 
+Since learning using models that interpolate is not exclusive to deep neural networks , we study generalization in the presence of interpolation in the case of kernel methods . 
+We study both linear and kernel least squares problems in this paper . """
+
+# For string
+res = summerizer.predict(text, type="str")
+# For text
+res = summerizer.predict("bodytext.txt", type="txt")
+# For pdf
+res = summerizer.predict("raw.pdf")
+
+```
 
 ## Contribution
 

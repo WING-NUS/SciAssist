@@ -54,6 +54,7 @@ python-magic~=0.4.18
 latex2mathml~=2.16.2
 chardet~=3.0.4
 
+
 numpy
 pytorch-crf
 torchcrf
@@ -62,3 +63,4 @@ seqeval
 
 
 bert-score
+

@@ -2,6 +2,7 @@ import os
 
 from pdfminer.high_level import extract_pages
 
+
 from SciAssist import BASE_OUTPUT_DIR
 
 path="test.pdf"
@@ -13,6 +14,7 @@ def process_pdf(path):
         "body_text":[],
         "reference":[]
     }
+
     print(path)
     fp = open(path, 'rb')
     for page_layout in extract_pages(path):
@@ -22,7 +24,9 @@ def process_pdf(path):
                 text = text.strip()
                 if text.isdigit() == False and text != "":
                     raw_text.append(text)
+
     fp.close()
+
     res["title"] = raw_text[0]
 
     i = 1 # the index of the current text in raw_text

@@ -94,7 +94,8 @@ Reference string parsing
 Controlled Summarization(CoCoSciSum)
 """""""""""""""""""""""""""""
 
-.. _ControlledSummarization:
+
+.. _Summarization:
 
 .. autoclass:: SciAssist.Summarization
     :members: predict
