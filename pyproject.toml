@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "SciAssist"
 
-version = "0.0.36"
+version = "0.0.41"
 
 authors = [
   { name="WING-NUS", email="dingyixi@hotmail.com" },

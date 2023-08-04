@@ -133,11 +133,8 @@ class Summarization(Pipeline):
         Examples:
 
              >>> from SciAssist import Summarization
-             
              >>> summarizer = Summarization()
-             
              >>> res = summarizer.predict('Bert_paper.pdf', type="pdf", length=50, keywords=["Cloze task"])
-
              >>> res["summary"]
              ['This paper proposes a bidirectional pre-training method for language representations. The method is inspired by the Cloze task. The method is evaluated on a large suite of sentence-level and token-level tasks.']
 

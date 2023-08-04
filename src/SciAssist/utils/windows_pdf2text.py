@@ -14,7 +14,6 @@ def process_pdf(path):
         "body_text":[],
         "reference":[]
     }
-
     print(path)
     fp = open(path, 'rb')
     for page_layout in extract_pages(path):
