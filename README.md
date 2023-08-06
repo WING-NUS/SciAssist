@@ -13,7 +13,7 @@
   <a href="#about">About</a> •
   <a href="#installation">Installation</a> •
   <a href="#usage">Usage</a> •
-  <a href="#contribution">Contribution</a> 
+  <a href="#development">Development</a> 
   <br> <br>
 </div>
 
