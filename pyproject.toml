@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "SciAssist"
-version = "0.0.29"
+version = "0.0.37"
 authors = [
   { name="WING-NUS", email="dingyixi@hotmail.com" },
 ]
@@ -43,6 +43,10 @@ dependencies = [
     "wandb~=0.12.19",
     "pdfminer.six",
     "pandas~=1.4.3",
+    "pytorch-crf",
+    "torchcrf",
+    "sacremoses",
+    "seqeval",
 ]
 
 
