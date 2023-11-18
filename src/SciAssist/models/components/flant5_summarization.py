@@ -34,9 +34,10 @@ class FlanT5ForSummarization(nn.Module):
             diversity_penalty = 1.0
         return self.flant5.generate(input_ids=input_ids, attention_mask=attention_mask,
                                     num_beams=num_beams,
-                                    num_return_sequences=num_return_sequences,
-                                    num_beam_groups=num_return_sequences,
-                                    diversity_penalty=diversity_penalty,
-                                    max_length=300,
-                                    do_sample=False,
-                                    no_repeat_ngram_size=5 )
+                                    # num_return_sequences=num_return_sequences,
+                                    # num_beam_groups=num_return_sequences,
+                                    # diversity_penalty=diversity_penalty,
+                                    top_k = 40,
+                                    max_length=500,
+                                    do_sample=True,)
+                                    # no_repeat_ngram_size=5 )

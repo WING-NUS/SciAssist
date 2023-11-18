@@ -4,13 +4,12 @@ import math
 import os
 from typing import List, Tuple, Optional, Dict
 
-from datasets import Dataset
-
 from SciAssist import BASE_TEMP_DIR, BASE_OUTPUT_DIR
 from SciAssist.pipelines.pipeline import Pipeline
 from SciAssist.pipelines.testing_pipeline import test
 from SciAssist.utils.pdf2text import process_pdf_file, get_bodytext
 from SciAssist.utils.windows_pdf2text import windows_get_bodytext
+from datasets import Dataset
 
 
 class Summarization(Pipeline):
@@ -63,8 +62,8 @@ class Summarization(Pipeline):
             max_target_length=300,
             os_name=None,
     ):
-        super().__init__(task_name=task_name, model_name=model_name, device=device,
-                         cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
+        super().__init__(task_name=task_name, model_name=model_name, checkpoint=checkpoint,device=device,
+                         cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir, )
 
         self.data_utils = self.data_utils(
             tokenizer=tokenizer,
