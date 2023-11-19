@@ -1,12 +1,11 @@
 import logging
-import warnings
-from typing import List, Sequence
-
 import pytorch_lightning as pl
 import rich.syntax
 import rich.tree
+import warnings
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.utilities import rank_zero_only
+from typing import List, Sequence
 
 
 def get_logger(name=__name__) -> logging.Logger:
@@ -108,7 +107,7 @@ def log_hyperparameters(
     datamodule: pl.LightningDataModule,
     trainer: pl.Trainer,
     callbacks: List[pl.Callback],
-    logger: List[pl.loggers.base.LightningLoggerBase],
+    logger: List[pl.loggers.logger.Logger],
 ) -> None:
     """Controls which config parts are saved by Lightning loggers.
 
@@ -151,7 +150,7 @@ def finish(
     datamodule: pl.LightningDataModule,
     trainer: pl.Trainer,
     callbacks: List[pl.Callback],
-    logger: List[pl.loggers.LightningLoggerBase],
+    logger: List[pl.loggers.logger.Logger],
 ) -> None:
     """Makes sure everything closed properly."""
 
