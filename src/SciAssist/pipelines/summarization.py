@@ -177,9 +177,9 @@ class Summarization(Pipeline):
             num_return_sequences=1,
             length=100,
             keywords=None,
-            top_k=top_k,
-            max_length=max_length,
-            do_sample=do_sample,
+            top_k=0,
+            max_length=500,
+            do_sample=False,
     ) -> List[str]:
         """
         Summarize each text in the list.
@@ -216,9 +216,9 @@ class Summarization(Pipeline):
             num_return_sequences=1,
             length=100,
             keywords=None,
-            top_k=top_k,
-            max_length=max_length,
-            do_sample=do_sample,
+            top_k=0,
+            max_length=500,
+            do_sample=False,
     ) -> Tuple[str, str]:
 
         """
@@ -248,9 +248,9 @@ class Summarization(Pipeline):
             num_return_sequences: int = 1,
             length=100,
             keywords=None,
-            top_k=top_k,
-            max_length=max_length,
-            do_sample=do_sample,
+            top_k=0,
+            max_length=500,
+            do_sample=False,
     ) -> Tuple[str, str]:
         """
 
@@ -286,9 +286,9 @@ class Summarization(Pipeline):
             num_return_sequences=1,
             length = 100,
             keywords = None,
-            top_k=top_k,
-            max_length=max_length,
-            do_sample=do_sample,
+            top_k=0,
+            max_length=500,
+            do_sample=False,
     ) -> Dict:
         """
         Summarize a document from a PDF file.
