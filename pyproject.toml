@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "SciAssist"
-version = "0.0.41"
+version = "0.0.42"
 authors = [
   { name="WING-NUS", email="dingyixi@hotmail.com" },
 ]
@@ -33,7 +33,7 @@ dependencies = [
     "PyPDF2~=2.10.7",
     "python_magic~=0.4.18",
     "pytorch_lightning~=1.7.1",
-    "requests~=2.21.0",
+    "requests~=2.22.0",
     "rich~=12.4.4",
     "seaborn~=0.11.2",
     "setuptools>=61.0",

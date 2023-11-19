@@ -46,7 +46,7 @@ pdfminer.six # windows pdf processing
 
 # --------- doc2json --------- #
 boto3~=1.9.147
-requests~=2.21.0
+requests~=2.22.0
 Flask~=1.0.2
 tqdm
 lxml
