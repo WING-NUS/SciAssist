@@ -34,7 +34,7 @@ pudb            # debugger
 
 seaborn~=0.11.2
 omegaconf~=2.2.2
-transformers~=4.19.2
+transformers~=4.31.0
 packaging~=21.3
 datasets~=2.2.2
 beautifulsoup4~=4.9.0
