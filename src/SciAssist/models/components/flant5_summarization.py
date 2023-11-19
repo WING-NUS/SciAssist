@@ -28,16 +28,16 @@ class FlanT5ForSummarization(nn.Module):
             logits=outputs.logits
         )
 
-    def generate(self, input_ids=None, attention_mask=None, num_beams=5, num_return_sequences=1):
+    def generate(self, input_ids=None, attention_mask=None, num_beams=5, num_return_sequences=1, top_k=0, max_length=500, do_sample=True):
         diversity_penalty = 0.0
         if num_return_sequences>1:
             diversity_penalty = 1.0
         return self.flant5.generate(input_ids=input_ids, attention_mask=attention_mask,
                                     num_beams=num_beams,
-                                    # num_return_sequences=num_return_sequences,
+                                    num_return_sequences=num_return_sequences,
                                     # num_beam_groups=num_return_sequences,
                                     # diversity_penalty=diversity_penalty,
-                                    top_k = 40,
-                                    max_length=500,
-                                    do_sample=True,)
+                                    top_k=top_k,
+                                    max_length=max_length,
+                                    do_sample=do_sample,)
                                     # no_repeat_ngram_size=5 )

@@ -27,7 +27,7 @@ class Pipeline():
 
     """
 
-    def __init__(self, task_name: str, model_name: str = "default", checkpoint: str = checkpoint, device="gpu",
+    def __init__(self, task_name: str, model_name: str = "default", checkpoint: str = None, device="gpu",
                  cache_dir=None, output_dir=None, temp_dir=None):
 
         self.device = device
