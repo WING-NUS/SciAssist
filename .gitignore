@@ -6,6 +6,8 @@
 *.pyc
 .vscode/
 demo.py
-
-
-
+env/
+SciAssist.egg-info/
+grobid_log
+grobid-0.6.1/
+output/

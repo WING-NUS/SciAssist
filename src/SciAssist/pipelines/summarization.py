@@ -59,7 +59,7 @@ class Summarization(Pipeline):
             checkpoint="google/flan-t5-base",
             model_max_length=1024,
             max_source_length=1024,
-            max_target_length=500,
+            max_target_length=300,
             os_name=None,
     ):
         super().__init__(task_name=task_name, model_name=model_name, checkpoint=checkpoint,device=device,
