@@ -1,15 +1,4 @@
 
-### **CHANGE LOG
-
-**Source Code**
-- Rename `SingleSummarization` to `Summarization`.
-- Change the format of output files from `.txt` to `.json`.
-
-**Documentation**
-- Move the definition of `Pipeline` class from `Usage` to `Contribution Guide`.
-- Add catalog for Contribution Guide.
-- Add examples for choosing devices in `Usage`.
-
 <div align="center">
 
 # SciAssist
@@ -22,6 +11,7 @@
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/wing-nus/SciAssist)
   <br> <br>
   <a href="#about">About</a> •
+  <a href="#about">Announcement</a> •
   <a href="#installation">Installation</a> •
   <a href="#usage">Usage</a> •
   <a href="#contribution">Contribution</a> 
@@ -30,13 +20,23 @@
 
 ## About
 
-This is the repository of SciAssist, which is a toolkit to assist scientists' research. SciAssist currently supports reference string parsing, more functions are under active development by [WING@NUS](https://wing.comp.nus.edu.sg/), Singapore. The project was built upon an open-sourced [template by ashleve](https://github.com/ashleve/lightning-hydra-template).
+This is the repository of SciAssist, which is a toolkit to assist scientists' research. SciAssist currently supports Summarization, Reference String Parsing, more functions are under active development by [WING@NUS](https://wing.comp.nus.edu.sg/), Singapore. The project was built upon an open-sourced [template by ashleve](https://github.com/ashleve/lightning-hydra-template), which uses Pytorch Lightning and Hydra as the framework for model training and configuration, respectively. 
+
+## Announcement
+* <em>CocoSciSum: A Scientific Summarization Toolkit with Compositional Controllability</em> is accepted as an EMNLP 2023 System Demonstration paper!
+* Our [Demo](https://huggingface.co/spaces/wing-nus/SciAssist) is online in Huggingface Space!
 
 ## Installation
 
+
 ``` bash
-pip install SciAssist
+conda create --name assist python=3.8
+conda activate assist
+[install pytorch]
+pip install sciassist
 ```
+Important: Make sure you install PyTorch (must be compatible to your machine) before SciAssist.
+
 #### Setup Grobid for pdf processing
 After you install the package, you can simply setup grobid with the CLI:
 ```bash
@@ -52,9 +52,39 @@ run_grobid
 
 ## Usage
 
-Here are some example usages.
 
-**Reference string parsing:**
+**Task 1: (Single Document) Summarization**
+
+```python
+from SciAssist import Summarization
+
+# Set device="cpu" if you want to use only CPU. The default device is "gpu".
+# summarizer = Summarization(device="cpu")
+summarizer = Summarization(device="gpu")
+
+text = """1 INTRODUCTION . Statistical learning theory studies the learning properties of machine learning algorithms , and more fundamentally , the conditions under which learning from finite data is possible . 
+In this context , classical learning theory focuses on the size of the hypothesis space in terms of different complexity measures , such as combinatorial dimensions , covering numbers and Rademacher/Gaussian complexities ( Shalev-Shwartz & Ben-David , 2014 ; Boucheron et al. , 2005 ) . 
+Another more recent approach is based on defining suitable notions of stability with respect to perturbation of the data ( Bousquet & Elisseeff , 2001 ; Kutin & Niyogi , 2002 ) . 
+In this view , the continuity of the process that maps data to estimators is crucial , rather than the complexity of the hypothesis space . 
+Different notions of stability can be considered , depending on the data perturbation and metric considered ( Kutin & Niyogi , 2002 ) . 
+Interestingly , the stability and complexity approaches to characterizing the learnability of problems are not at odds with each other , and can be shown to be equivalent as shown in Poggio et al . ( 2004 ) and Shalev-Shwartz et al . ( 2010 ) . 
+In modern machine learning overparameterized models , with a larger number of parameters than the size of the training data , have become common . 
+The ability of these models to generalize is well explained by classical statistical learning theory as long as some form of regularization is used in the training process ( Bühlmann & Van De Geer , 2011 ; Steinwart & Christmann , 2008 ) . 
+However , it was recently shown - first for deep networks ( Zhang et al. , 2017 ) , and more recently for kernel methods ( Belkin et al. , 2019 ) - that learning is possible in the absence of regularization , i.e. , when perfectly fitting/interpolating the data . 
+Much recent work in statistical learning theory has tried to find theoretical ground for this empirical finding . 
+Since learning using models that interpolate is not exclusive to deep neural networks , we study generalization in the presence of interpolation in the case of kernel methods . 
+We study both linear and kernel least squares problems in this paper . """
+
+# For string
+res = summarizer.predict(text, type="str")
+# For text
+res = summarizer.predict("bodytext.txt", type="txt")
+# For pdf
+res = summarizer.predict("raw.pdf")
+
+```
+
+**Task 2: Reference string parsing**
 
 ```python
 from SciAssist import ReferenceStringParsing
@@ -74,36 +104,7 @@ res  = ref_parser.predict("test.txt", type="txt")
 res = ref_parser.predict("test.pdf")
 ```
 
-**Summarizarion for single document:**
-
-```python
-from SciAssist import Summarization
-
-# Set device="cpu" if you want to use only CPU. The default device is "gpu".
-# pipleine = Summarization(device="cpu")
-summerizer = Summarization(device="gpu")
-
-text = """1 INTRODUCTION . Statistical learning theory studies the learning properties of machine learning algorithms , and more fundamentally , the conditions under which learning from finite data is possible . 
-In this context , classical learning theory focuses on the size of the hypothesis space in terms of different complexity measures , such as combinatorial dimensions , covering numbers and Rademacher/Gaussian complexities ( Shalev-Shwartz & Ben-David , 2014 ; Boucheron et al. , 2005 ) . 
-Another more recent approach is based on defining suitable notions of stability with respect to perturbation of the data ( Bousquet & Elisseeff , 2001 ; Kutin & Niyogi , 2002 ) . 
-In this view , the continuity of the process that maps data to estimators is crucial , rather than the complexity of the hypothesis space . 
-Different notions of stability can be considered , depending on the data perturbation and metric considered ( Kutin & Niyogi , 2002 ) . 
-Interestingly , the stability and complexity approaches to characterizing the learnability of problems are not at odds with each other , and can be shown to be equivalent as shown in Poggio et al . ( 2004 ) and Shalev-Shwartz et al . ( 2010 ) . 
-In modern machine learning overparameterized models , with a larger number of parameters than the size of the training data , have become common . 
-The ability of these models to generalize is well explained by classical statistical learning theory as long as some form of regularization is used in the training process ( Bühlmann & Van De Geer , 2011 ; Steinwart & Christmann , 2008 ) . 
-However , it was recently shown - first for deep networks ( Zhang et al. , 2017 ) , and more recently for kernel methods ( Belkin et al. , 2019 ) - that learning is possible in the absence of regularization , i.e. , when perfectly fitting/interpolating the data . 
-Much recent work in statistical learning theory has tried to find theoretical ground for this empirical finding . 
-Since learning using models that interpolate is not exclusive to deep neural networks , we study generalization in the presence of interpolation in the case of kernel methods . 
-We study both linear and kernel least squares problems in this paper . """
-
-# For string
-res = summerizer.predict(text, type="str")
-# For text
-res = summerizer.predict("bodytext.txt", type="txt")
-# For pdf
-res = summerizer.predict("raw.pdf")
-
-```
+<!---
 
 **Dataset mention extraction:**
 
@@ -111,17 +112,28 @@ res = summerizer.predict("raw.pdf")
 from SciAssist import DatasetExtraction
 
 # Set device="cpu" if you want to use only CPU. The default device is "gpu".
-# ref_parser = DatasetExtraction(device="cpu")
+# extractor = DatasetExtraction(device="cpu")
 extractor = DatasetExtraction(device="gpu")
 
 # For string
 res = extractor.extract("The impact of gender identity on emotions was examined by researchers using a subsample from the National Longitudinal Study of Adolescent Health. The study aimed to investigate the direct effects of gender identity on emotional experiences and expression. By focusing on a subsample of the larger study, the researchers were able to hone in on the specific relationship between gender identity and emotions. Through their analysis, the researchers sought to determine whether gender identity could have a significant and direct impact on emotional well-being. The findings of the study have important implications for our understanding of the complex interplay between gender identity and emotional experiences, and may help to inform future interventions and support for individuals who experience gender-related emotional distress.", type="str")
 # For text: please input the path of your .txt file
-res = extractor.extract("test.txt", type="txt")
+res = extractor.predict("test.txt", type="txt")
 # For pdf: please input the path of your .pdf file
 res = extractor.predict("test.pdf", type="pdf")
 ```
+--->
 
+### **CHANGE LOG
+
+**Source Code**
+- Rename `SingleSummarization` to `Summarization`.
+- Change the format of output files from `.txt` to `.json`.
+
+**Documentation**
+- Move the definition of `Pipeline` class from `Usage` to `Contribution Guide`.
+- Add catalog for Contribution Guide.
+- Add examples for choosing devices in `Usage`.
 
 
 ## Contribution
@@ -136,6 +148,7 @@ Generally, to add a new task, you will need to:
     5. Provide a pipeline for users.
 
 We provide a step-by-step contribution guide, see [SciAssist’s documentation](https://wing-sciassist.readthedocs.io/en/latest/Contribution.html#).
+
 
 ## LICENSE
 This toolkit is licensed under the `Attribution-NonCommercial-ShareAlike 4.0 International`.
