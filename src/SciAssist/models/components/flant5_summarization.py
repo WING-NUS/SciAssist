@@ -28,7 +28,7 @@ class FlanT5ForSummarization(nn.Module):
             logits=outputs.logits
         )
 
-    def generate(self, input_ids=None, attention_mask=None, num_beams=5, num_return_sequences=1, top_k=0, max_length=500, do_sample=True):
+    def generate(self, input_ids=None, attention_mask=None, num_beams=1, num_return_sequences=1, top_k=0, max_length=500, do_sample=False):
         diversity_penalty = 0.0
         if num_return_sequences>1:
             diversity_penalty = 1.0
