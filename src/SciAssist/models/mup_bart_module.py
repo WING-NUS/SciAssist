@@ -176,9 +176,9 @@ class MupBartLitModule(LightningModule):
             # Compute Rouge Metrics
             rouge_metric = self.test_metric(preds=decoded_preds, target=decoded_labels)
             decoded_preds = [decoded_pred.replace("\n", " ") for decoded_pred in decoded_preds]
-            # decoded_labels = [decoded_label.replace("\n", " ") for decoded_label in decoded_labels]
+            decoded_labels = [decoded_label.replace("\n", " ") for decoded_label in decoded_labels]
             self.test_preds.extend(decoded_preds)
-            # self.test_labels.extend(decoded_labels)
+            self.test_labels.extend(decoded_labels)
             # print(bertscore_metric)
 
             # rounded_score = {k: numpy.mean([round(v, 3) for v in vv]) for k, vv in bertscore_metric.items()}
@@ -186,20 +186,20 @@ class MupBartLitModule(LightningModule):
             #  Log results
             # self.log("test/BERTScore", rounded_score["f1"], on_step=False, on_epoch=True, prog_bar=True)
 
-            # result = {key: value * 100 for key, value in rouge_metric.items()}
-            #
-            # result['preds'] = decoded_preds
-            # # result['id'] = batch['id']
-            # # Log results
-            # self.log("test/Rouge-1", result["rouge1_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
-            # self.log("test/Rouge-2", result["rouge2_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
-            # self.log("test/Rouge-L", result["rougeL_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
-            # self.log("test/Rouge-Lsum", result["rougeLsum_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+            result = {key: value * 100 for key, value in rouge_metric.items()}
+            
+            result['preds'] = decoded_preds
+            # result['id'] = batch['id']
+            # Log results
+            self.log("test/Rouge-1", result["rouge1_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+            self.log("test/Rouge-2", result["rouge2_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+            self.log("test/Rouge-L", result["rougeL_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
+            self.log("test/Rouge-Lsum", result["rougeLsum_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
             length_pred  = [len(pred.strip().split()) for pred in decoded_preds]
             length_label = [len(label.strip().split()) for label in decoded_labels]
 
             bucket_pred = [50*math.ceil(s/50) for s in length_pred]
-            bucket_label = [50 for s in length_label]
+            bucket_label = [50*math.ceil(s/50) in length_label]
             # bucket_label = batch["length"].to("cpu").tolist()
 
 
@@ -215,7 +215,7 @@ class MupBartLitModule(LightningModule):
             self.test_len_label.extend(bucket_label)
 
         # Compute average length of summaries
-        # self.test_gen_lens.extend([np.count_nonzero(pred != self.data_utils.tokenizer.pad_token_id) for pred in preds.to("cpu")])
+        self.test_gen_lens.extend([np.count_nonzero(pred != self.data_utils.tokenizer.pad_token_id) for pred in preds.to("cpu")])
         return result
 
 
@@ -226,77 +226,29 @@ class MupBartLitModule(LightningModule):
         #         for res in batch["preds"]:
         #             f.write(res)
         #             f.write("\n")
-        summary = self.test_preds
-        summary = [ s+ f"({len(s.split(' '))})" for s in summary]
-        filename = r"/home/yixi/project/Dataset/20212223_urls.csv"
-        import csv
-        with open(filename,'r') as f:
-            url = []
-            text = []
-            kws = []
-            rows = csv.reader(f)
-
-            # Get Column names
-            keys = next(rows)
-            # Add values by column
-            for row in rows:
-                url.append(row[0])
-                text.append(row[1])
-                # kws.append(row[2])
-
-
-        # dicts = {"url":url, "text":text, "keywords":kws,"length":["200" for i in url], "summary":summary}
-        dicts = {"url": url, "text": text, "keywords": ["" for i in url], "length": ["" for i in url], "summary": summary}
-        data = pd.DataFrame(dicts)
-        # data.to_csv(r"/home/yixi/project/Dataset/acl_results_100_2023_v2.csv", index=False)
-        data.to_csv(r"/home/yixi/project/Dataset/20212223_noctrl.csv", index=False)
-        stemmer = PorterStemmer()
-
-        suc = 0
-        total = 0
-
-
-        # for k,t in zip(kws,text):
-        #     kw = word_tokenize(k)
-        #     kw = [stemmer.stem(k.strip()) for k in kw]
-        #     # print(file.strip().split(" => "))
-        #     text = word_tokenize(t)
-        #     text = [stemmer.stem(k.strip()) for k in text]
-        #
-        #     kw = " ".join(kw)
-        #     text = " ".join(text)
-        #
-        #     if kw in text:
-        #         suc+=1
-        #     total+=1
-        #
-        # self.log("SR", suc/total, on_step=False, on_epoch=True, prog_bar=True)
-        # raw_datasets["validation"] = {
-
-        # P,R,F1 = bert_score.score(self.test_preds, self.test_labels,
-        #                                     rescale_with_baseline=True, lang="en")
+                P,R,F1 = bert_score.score(self.test_preds, self.test_labels,
+                                            rescale_with_baseline=True, lang="en")
         # Compute average length of summaries
-        # self.test_gen_len = np.mean(self.test_gen_lens)
+        self.test_gen_len = np.mean(self.test_gen_lens)
         bucket_pred, bucket_label = self.test_len_pred, self.test_len_label
-        # bucket = {"bucket_pred": bucket_pred, "bucket_lable": bucket_label}
-        # bucket = pd.DataFrame(bucket)
+        bucket = {"bucket_pred": bucket_pred, "bucket_lable": bucket_label}
+        bucket = pd.DataFrame(bucket)
         # bucket.to_csv("/home/dingyx/project/SciAssist/data/FLANT5_len/instances.csv", index=True)
 
         pcc = pearsonr(self.test_len_label, self.test_len_pred)
         PCC, pvalue = pcc[0], pcc[1]
-        # print(pcc)
+        print(pcc)
         MAD = np.mean([np.absolute(pred - label) for pred, label in zip(bucket_pred, bucket_label)])
         length_acc = np.mean([pred <= label for pred, label in zip(bucket_pred, bucket_label)])
         length_acc2 = np.mean([pred == label for pred, label in zip(bucket_pred, bucket_label)])
-        #
+
         self.log("MAD", MAD, on_step=False, on_epoch=True, prog_bar=True)
         self.log("length_acc", length_acc, on_step=False, on_epoch=True, prog_bar=True)
         self.log("length_acc2", length_acc2, on_step=False, on_epoch=True, prog_bar=True)
-        # self.log("BertScore", F1.mean(), on_step=False, on_epoch=True, prog_bar=True)
+        self.log("BertScore", F1.mean(), on_step=False, on_epoch=True, prog_bar=True)
         self.log("PCC", PCC, on_step=False, on_epoch=True, prog_bar=True)
-        # self.log("P-Value", pvalue, on_step=False, on_epoch=True, prog_bar=True)
-        # self.log("test/gen_len", self.test_gen_len, on_step=False, on_epoch=True, prog_bar=True)
-
+        self.log("P-Value", pvalue, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("test/gen_len", self.test_gen_len, on_step=False, on_epoch=True, prog_bar=True)
 
 
     def on_epoch_end(self):
