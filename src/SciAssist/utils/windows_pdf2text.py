@@ -1,5 +1,4 @@
 import os
-
 from pdfminer.high_level import extract_pages
 
 from SciAssist import BASE_OUTPUT_DIR
@@ -19,7 +18,8 @@ def process_pdf(path):
     for page_layout in extract_pages(path):
         for element in page_layout:
             if "get_text" in dir(element):
-                text = element.get_text().replace("\n","")
+                text = element.get_text().replace("-\n","") # Removes hyphen from a word split between lines
+                text = text.replace("\n"," ") # Replace "\n" with space (between words)
                 text = text.strip()
                 if text.isdigit() == False and text != "":
                     raw_text.append(text)
