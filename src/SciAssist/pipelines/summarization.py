@@ -63,7 +63,7 @@ class Summarization(Pipeline):
             os_name=None,
     ):
         super().__init__(task_name=task_name, model_name=model_name, checkpoint=checkpoint,device=device,
-                         cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir, )
+                         cache_dir=cache_dir, output_dir=output_dir, temp_dir=temp_dir)
 
         self.data_utils = self.data_utils(
             tokenizer=tokenizer,
