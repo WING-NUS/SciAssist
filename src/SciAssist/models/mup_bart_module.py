@@ -1,23 +1,19 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
-import bert_score
 import math
-import nltk
-import numpy as np
 import os
+from pathlib import Path
+from typing import Any, List
+
+import bert_score
+import numpy as np
 import pandas as pd
 import torch
-from fastparquet import ParquetFile
-from nltk.corpus import stopwords
-from nltk.stem.porter import *
-from nltk.tokenize import word_tokenize
-from pathlib import Path
 from pytorch_lightning import LightningModule
 from scipy.stats import pearsonr
 from torchmetrics import MaxMetric
 from torchmetrics.text.bert import BERTScore
 from torchmetrics.text.rouge import ROUGEScore
 from transformers import AutoModelForSeq2SeqLM
-from typing import Any, List
 
 from SciAssist.utils.data_utils import DataUtilsForSeq2Seq
 
