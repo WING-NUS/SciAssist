@@ -36,7 +36,7 @@ seaborn~=0.11.2
 omegaconf~=2.2.2
 transformers~=4.30.2
 packaging~=21.3
-datasets~=2.2.2
+datasets~=2.15.0
 beautifulsoup4~=4.9.0
 
 matplotlib~=3.5.1
