@@ -81,10 +81,12 @@ def load_model(config: Dict, checkpoint=None, cache_dir=BASE_CACHE_DIR, device="
 
     print("Loading the model...")
     model_class = config["model"]
+
     if checkpoint!=None:
         model = model_class(cache_dir=cache_dir,model_checkpoint=checkpoint)
     else:
         model = model_class(cache_dir=cache_dir)
+
     map_location=None
     if device == "cpu":
         map_location = torch.device("cpu")

@@ -1,4 +1,4 @@
-from transformers import *
+from transformers import AutoModel
 from torch.nn.utils.rnn import pad_sequence
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
