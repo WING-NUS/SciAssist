@@ -164,11 +164,11 @@ class Summarization(Pipeline):
         return results
 
     def _to_device(self, batch):
-        if self.model_name in ["default", "bart-cnn-on-mup", "flan-t5", "t5"]:
-            return {
-                "input_ids": batch["input_ids"].to(self.device),
-                "attention_mask": batch["attention_mask"].to(self.device),
-            }
+        
+        return {
+              "input_ids": batch["input_ids"].to(self.device),
+              "attention_mask": batch["attention_mask"].to(self.device),
+          }
 
     def _summarize(
             self,
