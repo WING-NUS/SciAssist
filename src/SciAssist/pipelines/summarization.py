@@ -164,7 +164,8 @@ class Summarization(Pipeline):
         return results
 
     def _to_device(self, batch):
-        
+        ''' Automatically move data to the same device with the model.
+        '''
         return {
               "input_ids": batch["input_ids"].to(self.device),
               "attention_mask": batch["attention_mask"].to(self.device),
