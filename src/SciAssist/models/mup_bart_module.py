@@ -187,9 +187,9 @@ class MupBartLitModule(LightningModule):
             # self.log("test/BERTScore", rounded_score["f1"], on_step=False, on_epoch=True, prog_bar=True)
 
             result = {key: value * 100 for key, value in rouge_metric.items()}
-            
+
             result['preds'] = decoded_preds
-            # result['id'] = batch['id']
+            result['id'] = batch['id']
             # Log results
             self.log("test/Rouge-1", result["rouge1_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
             self.log("test/Rouge-2", result["rouge2_fmeasure"], on_step=False, on_epoch=True, prog_bar=True)
@@ -199,7 +199,7 @@ class MupBartLitModule(LightningModule):
             length_label = [len(label.strip().split()) for label in decoded_labels]
 
             bucket_pred = [50*math.ceil(s/50) for s in length_pred]
-            bucket_label = [50*math.ceil(s/50) in length_label]
+            bucket_label = [50*math.ceil(s/50) for s in length_label]
             # bucket_label = batch["length"].to("cpu").tolist()
 
 
@@ -226,7 +226,8 @@ class MupBartLitModule(LightningModule):
         #         for res in batch["preds"]:
         #             f.write(res)
         #             f.write("\n")
-                P,R,F1 = bert_score.score(self.test_preds, self.test_labels,
+        
+        P,R,F1 = bert_score.score(self.test_preds, self.test_labels,
                                             rescale_with_baseline=True, lang="en")
         # Compute average length of summaries
         self.test_gen_len = np.mean(self.test_gen_lens)
