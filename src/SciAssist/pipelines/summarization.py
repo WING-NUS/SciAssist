@@ -80,7 +80,7 @@ class Summarization(Pipeline):
             self, input: str, type: str = "pdf",
             output_dir=None,
             temp_dir=None,
-            num_beams=5,
+            num_beams=1,
             num_return_sequences=1,
             save_results=True,
             length = None,
