@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
     "beautifulsoup4~=4.9.0",
     "chardet~=3.0.4",
-    "datasets~=2.2.2",
+    "datasets~=2.15.0",
     "hydra-core>=1.1.0",
     "lxml",
     "matplotlib~=3.5.1",
