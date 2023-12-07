@@ -1,15 +1,14 @@
-import os
-from pathlib import Path
-from typing import Any, List
-
 import matplotlib.pyplot as plt
+import os
 import seaborn as sn
 import torch
+from pathlib import Path
 from pytorch_lightning import LightningModule
 from torchmetrics import ConfusionMatrix
 from torchmetrics import F1Score
 from torchmetrics import MaxMetric
 from torchmetrics.classification.accuracy import Accuracy
+from typing import Any, List
 
 from SciAssist.datamodules.components.cora_label import num_labels, LABEL_NAMES
 from SciAssist.models.components.bert_token_classifier import BertForTokenClassifier
@@ -67,7 +66,7 @@ class CoraLitModule(LightningModule):
         self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
         return {"loss": loss}
 
-    def training_epoch_end(self, outputs: List[Any]):
+    def on_training_epoch_end(self):
         pass
 
     def validation_step(self, batch: Any, batch_idx: int):
@@ -91,7 +90,7 @@ class CoraLitModule(LightningModule):
         self.log("val/macro_f1", macro_f1, on_step=False, on_epoch=True, prog_bar=True)
         return {"loss": loss, "preds": true_preds, "labels": true_labels}
 
-    def validation_epoch_end(self, outputs: List[Any]):
+    def on_validation_epoch_end(self):
         acc = self.val_acc.compute()
         self.val_acc_best.update(acc)
         self.log("val/acc_best", self.val_acc_best.compute(), on_epoch=True, prog_bar=True)
@@ -129,7 +128,7 @@ class CoraLitModule(LightningModule):
 
         return {"loss": loss, "preds": true_preds, "labels": true_labels}
 
-    def test_epoch_end(self, outputs: List[Any]):
+    def on_test_epoch_end(self):
         # wandb.init()
         acc = self.test_acc.compute()
         micro_f1 = self.test_micro_f1.compute()
