@@ -73,7 +73,7 @@ class MupBartLitModule(LightningModule):
         self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         return {"loss": loss}
 
-    def training_epoch_end(self, outputs: List[Any]):
+    def on_training_epoch_end(self):
         pass
 
     def validation_step(self, batch: Any, batch_idx: int):
@@ -121,7 +121,7 @@ class MupBartLitModule(LightningModule):
 
         return result
 
-    def validation_epoch_end(self, outputs: List[Any]):
+    def on_validation_epoch_end(self):
         rouge = self.val_metric.compute()
         # bert = self.val_bertscore.compute()
         # self.val_best_Rouge1.update(rouge["rouge1_fmeasure"])
@@ -219,22 +219,14 @@ class MupBartLitModule(LightningModule):
         return result
 
 
-    def test_epoch_end(self, outputs: List[Any]):
+    def on_test_epoch_end(self):
         # Save prediction results
         # with open(os.path.join(self.model.model_dir,"prediction.txt"),'w') as f:
         #     for batch in outputs:
         #         for res in batch["preds"]:
         #             f.write(res)
         #             f.write("\n")
-
-        for batch in outputs:
-            for id,res in zip(batch['id'],batch["preds"]):
-                with open("/home/dingyx/project/SciAssist/data/pdfs/summary_flant5/"  + str(id.item()) +".txt","a") as f:
-                    # print("/home/dingyx/project/SciAssist/data/MUP_CTRLkeyword/" + str(id.item()) +".txt")
-                    f.write(res)
-                    f.write("\n")
-                    # f.write(str(len(res.split(" "))))
-
+        
         P,R,F1 = bert_score.score(self.test_preds, self.test_labels,
                                             rescale_with_baseline=True, lang="en")
         # Compute average length of summaries
@@ -258,7 +250,6 @@ class MupBartLitModule(LightningModule):
         self.log("PCC", PCC, on_step=False, on_epoch=True, prog_bar=True)
         self.log("P-Value", pvalue, on_step=False, on_epoch=True, prog_bar=True)
         self.log("test/gen_len", self.test_gen_len, on_step=False, on_epoch=True, prog_bar=True)
-
 
 
     def on_epoch_end(self):

@@ -1,10 +1,9 @@
-import os
-from typing import List
-
 import hydra
+import os
+import pytorch_lightning.loggers
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule, LightningModule, Trainer, seed_everything
-from pytorch_lightning.loggers import LightningLoggerBase
+from typing import List
 
 from SciAssist import utils
 
@@ -17,8 +16,11 @@ def test(config: DictConfig) -> None:
         seed_everything(config.seed, workers=True)
 
     # Convert relative ckpt path to absolute path if necessary
-    if not os.path.isabs(config.ckpt_path):
+    if not os.path.isabs(config.ckpt_path) and config.ckpt_path != "None":
         config.ckpt_path = os.path.join(hydra.utils.get_original_cwd(), config.ckpt_path)
+    elif config.ckpt_path == "None":
+        config.ckpt_path = None
+    print(config.ckpt_path)
 
     # Init lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
@@ -29,7 +31,7 @@ def test(config: DictConfig) -> None:
     model: LightningModule = hydra.utils.instantiate(config.model)
 
     # Init lightning loggers
-    logger: List[LightningLoggerBase] = []
+    logger: List[pytorch_lightning.loggers.logger.Logger] = []
     if "logger" in config:
         for _, lg_conf in config.logger.items():
             if "_target_" in lg_conf:

@@ -1,8 +1,7 @@
 # main developer: Yixi Ding <dingyixi@hotmail.com>
 
-from typing import Dict
-
 import torch
+from typing import Dict
 
 from SciAssist import BASE_CACHE_DIR
 from SciAssist.models.components.bert_dataset_extraction import BertForDatasetExtraction
@@ -47,7 +46,12 @@ TASKS = {
             "model": FlanT5ForSummarization,
             "model_dict_url": "https://huggingface.co/spaces/dyxohjl666/Controlled-summarization/resolve/main/flant5-base-mup-scisumm-repeat5-kws.pt",
             "data_utils": DataUtilsForFlanT5,
-        }
+        },
+        "flan-t5-xl": {
+            "model": FlanT5ForSummarization,
+            "model_dict_url": None,
+            "data_utils": DataUtilsForFlanT5,
+        },
     },
     "dataset-extraction": {
         "default": {
@@ -59,7 +63,7 @@ TASKS = {
 
 }
 
-def load_model(config: Dict, cache_dir=BASE_CACHE_DIR, device="gpu"):
+def load_model(config: Dict, checkpoint=None, cache_dir=BASE_CACHE_DIR, device="gpu"):
     '''
 
     Args:
@@ -77,7 +81,12 @@ def load_model(config: Dict, cache_dir=BASE_CACHE_DIR, device="gpu"):
 
     print("Loading the model...")
     model_class = config["model"]
-    model = model_class(cache_dir=cache_dir)
+
+    if checkpoint!=None:
+        model = model_class(cache_dir=cache_dir,model_checkpoint=checkpoint)
+    else:
+        model = model_class(cache_dir=cache_dir)
+
     map_location=None
     if device == "cpu":
         map_location = torch.device("cpu")
