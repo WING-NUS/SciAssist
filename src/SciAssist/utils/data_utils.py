@@ -854,7 +854,7 @@ class DataUtilsForFlanT5():
                 prompts = [ leng(prompt,length) for (prompt,length) in zip(prompts,lengths)]
 
         inputs = [ prompt + ": " + raw_text for (prompt,raw_text) in zip(prompts, inputs) ]
-        print(inputs[0][:200])
+        
 
         # Setup the tokenizer for inputs
 
