@@ -21,3 +21,5 @@ BASE_CACHE_DIR = os.path.join(USER_DIR, ".cache/sciassist")
 from SciAssist.pipelines.reference_string_parsing import ReferenceStringParsing
 from SciAssist.pipelines.summarization import Summarization
 from SciAssist.pipelines.dataset_extraction import DatasetExtraction
+from SciAssist.pipelines.reference_entity_linking import ReferenceEntityLinkingLocal
+from SciAssist.pipelines.reference_entity_linking import ReferenceEntityLinkingOnline
